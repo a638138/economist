@@ -62,7 +62,32 @@ footer{max-width:1120px;margin:64px auto 0;padding-top:22px;border-top:1px solid
  nav.toc{padding:20px 18px}nav.toc ul{columns:1}
  h2.section-head{font-size:27px}
 }
-</style></head>
+</style><meta name="theme-color" content="#e3120b"/>
+<style>
+/* build_site.py 注入：小手機閱讀優化 */
+html{-webkit-text-size-adjust:100%}
+img,figure,table,pre{max-width:100%!important;height:auto}
+p,li,h1,h2,h3{overflow-wrap:break-word;word-break:break-word}
+@media(max-width:480px){
+ body{font-size:16.5px;line-height:1.8}
+ .wrap{padding:0 12px 72px}
+ .cover{padding:22px 0 14px}
+ .cover img{max-width:76vw}
+ .masthead{max-width:90vw!important;margin-bottom:18px!important}
+ .issue{font-size:16px}
+ .note{padding:12px 14px;font-size:15px}
+ h2.section-head{font-size:22px;margin:44px 0 16px}
+ nav.toc{padding:16px 14px}
+ nav.toc h3{font-size:19px}
+ nav.toc a{font-size:16px}
+ article.art{padding:20px 15px 24px;border-radius:8px}
+ h1.title{font-size:23px;line-height:1.3}
+ h3.rubric{font-size:17px}
+ article.art h2{font-size:20px}
+ article.art p{text-align:left}       /* 窄螢幕改左對齊，避免中英混排撐開字距 */
+}
+</style>
+</head>
 <body>
 <div class="wrap">
 <div class="cover">
@@ -1533,4 +1558,9 @@ AI模型被用來預測衝突
 <p>他最喜愛的城市是瓦拉納西，那座閃閃發光的城市，恆河被敬奉，死者被焚化。這裡每條河岸與巷弄都有他的主題。一位祭司小心地穿越人群，攜帶一隻小金屬罐的恆河水；年輕女子獻上薔薇；太陽在船隻上閃爍升起。瓦拉納西是達摩的具體體現，對靈魂與生命的順從接受。大多數朝聖者是透過沐浴或飲用這條母親河來找到它。他則只是帶著相機走過去。 ■</p>
 </article>
 <footer>由本機 Ollama + qwen3:8b 翻譯產生 · 2026-09-16 09:32</footer>
-</div></body></html>
+</div><a href="../index.html" aria-label="回目錄"
+ style="position:fixed;right:16px;bottom:16px;z-index:50;
+ padding:11px 16px;border-radius:999px;background:#e3120b;color:#fff;
+ text-decoration:none;font:600 15px/1 'Noto Sans TC','PingFang TC',system-ui,sans-serif;
+ box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent">☰ 目錄</a>
+</body></html>
