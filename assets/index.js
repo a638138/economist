@@ -13,6 +13,16 @@
   if(btn){icon();btn.onclick=function(){var i=order.indexOf(st.theme||'light');
     st.theme=order[(i+1)%order.length];wj(SKEY,st);applyTheme();icon();};}
 
+  var fs=document.getElementById('fsBtn');
+  function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement;}
+  if(fs){
+    if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled)){fs.style.display='none';}
+    else{fs.onclick=function(){var el=document.documentElement;
+      if(!fsEl()){(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}
+      else{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}};
+      document.addEventListener('fullscreenchange',function(){fs.textContent=fsEl()?'✕':'⛶';});}
+  }
+
   document.querySelectorAll('a.card').forEach(function(a){
     var m=(a.getAttribute('href')||'').match(/issues\/(.+)\.html/); if(!m)return;
     var p=prog[m[1]]; if(!p)return;

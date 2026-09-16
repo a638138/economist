@@ -50,8 +50,21 @@
 
   var fabs=document.createElement('div'); fabs.className='rd-fabs';
   fabs.innerHTML='<a class="rd-fab" href="../index.html" title="回目錄">☰</a>'
+    +'<button class="rd-fab" id="rdFull" title="全螢幕">⛶</button>'
     +'<button class="rd-fab" id="rdSet" title="閱讀設定">Aa</button>';
   document.body.appendChild(fabs);
+
+  // 全螢幕（Android/桌機支援；iOS Safari 不支援時自動隱藏，請改用「加到主畫面」）
+  var fullBtn=document.getElementById('rdFull');
+  function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement;}
+  if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled)){fullBtn.style.display='none';}
+  else{
+    fullBtn.onclick=function(){var el=document.documentElement;
+      if(!fsEl()){(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}
+      else{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}};
+    document.addEventListener('fullscreenchange',function(){fullBtn.textContent=fsEl()?'✕':'⛶';});
+    document.addEventListener('webkitfullscreenchange',function(){fullBtn.textContent=fsEl()?'✕':'⛶';});
+  }
 
   var panel=document.createElement('div'); panel.className='rd-panel'; panel.hidden=true;
   panel.innerHTML=
