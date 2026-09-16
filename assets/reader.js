@@ -54,16 +54,25 @@
     +'<button class="rd-fab" id="rdSet" title="閱讀設定">Aa</button>';
   document.body.appendChild(fabs);
 
-  // 全螢幕（Android/桌機支援；iOS Safari 不支援時自動隱藏，請改用「加到主畫面」）
+  // 全螢幕（桌機/Android Chrome）。iOS Safari 不支援時自動隱藏，請改用「加到主畫面」。
   var fullBtn=document.getElementById('rdFull');
   function fsEl(){return document.fullscreenElement||document.webkitFullscreenElement;}
-  if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled)){fullBtn.style.display='none';}
+  function reqFs(el){var fn=el.requestFullscreen||el.webkitRequestFullscreen;
+    return fn?fn.call(el):null;}   // 必須在點擊事件內「同步」呼叫，否則失去使用者手勢
+  function exitFs(){var fn=document.exitFullscreen||document.webkitExitFullscreen;if(fn)fn.call(document);}
+  var canFs=!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
+  if(!canFs){fullBtn.style.display='none';}
   else{
-    fullBtn.onclick=function(){var el=document.documentElement;
-      if(!fsEl()){(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}
-      else{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}};
-    document.addEventListener('fullscreenchange',function(){fullBtn.textContent=fsEl()?'✕':'⛶';});
-    document.addEventListener('webkitfullscreenchange',function(){fullBtn.textContent=fsEl()?'✕':'⛶';});
+    fullBtn.onclick=function(){
+      if(fsEl()){exitFs();return;}
+      var p;
+      try{p=reqFs(document.documentElement);}
+      catch(e){toast('無法全螢幕：'+(e.name||e.message)+'。可改用選單「加到主畫面」');return;}
+      if(p&&p.catch)p.catch(function(err){
+        toast('此瀏覽器擋下全螢幕（'+(err&&err.name||'error')+'）。請用 Chrome 選單「加到主畫面」以全螢幕開啟');});
+    };
+    ['fullscreenchange','webkitfullscreenchange'].forEach(function(ev){
+      document.addEventListener(ev,function(){fullBtn.textContent=fsEl()?'✕':'⛶';});});
   }
 
   var panel=document.createElement('div'); panel.className='rd-panel'; panel.hidden=true;
