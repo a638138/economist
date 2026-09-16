@@ -62,15 +62,26 @@ footer{max-width:1120px;margin:64px auto 0;padding-top:22px;border-top:1px solid
  nav.toc{padding:20px 18px}nav.toc ul{columns:1}
  h2.section-head{font-size:27px}
 }
+</style><script>try{var s=JSON.parse(localStorage.getItem("econ.settings")||"{}");if(s.theme&&s.theme!=="light")document.documentElement.setAttribute("data-theme",s.theme);}catch(e){}</script><style>
+html[data-theme="sepia"]{--bg:#f4ecd8;--ink:#3f342a;--card:#faf3e3;--line:#e3d7bd;--grey:#8a7a60}
+html[data-theme="grey"]{--bg:#e9eaec;--ink:#1c1e21;--card:#f7f8fa;--line:#d4d7dc;--grey:#6b7078}
+html[data-theme="dark"]{--bg:#15171a;--ink:#e4e1db;--card:#1e2126;--line:#333840;--grey:#9aa0a6}
+html[data-theme="dark"] .note{background:#241a19;color:#d8cbc9}
+html[data-theme="dark"] p.title-en{color:#8f8b85}
+html[data-theme="dark"] h3.rubric{color:#b8b3ab}
+html[data-theme="dark"] .card{background:var(--card)}
+html[data-theme="dark"] img.cover{opacity:.94}
+html{transition:background-color .2s}
 </style><meta name="theme-color" content="#e3120b"/>
 <style>
 /* build_site.py 注入：小手機閱讀優化 */
 html{-webkit-text-size-adjust:100%}
 img,figure,table,pre{max-width:100%!important;height:auto}
 p,li,h1,h2,h3{overflow-wrap:break-word;word-break:break-word}
+#econ-progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--red);z-index:60;transition:width .1s}
 @media(max-width:480px){
  body{font-size:16.5px;line-height:1.8}
- .wrap{padding:0 12px 72px}
+ .wrap{padding:0 12px 84px}
  .cover{padding:22px 0 14px}
  .cover img{max-width:76vw}
  .masthead{max-width:90vw!important;margin-bottom:18px!important}
@@ -86,7 +97,7 @@ p,li,h1,h2,h3{overflow-wrap:break-word;word-break:break-word}
  article.art h2{font-size:20px}
  article.art p{text-align:left}       /* 窄螢幕改左對齊，避免中英混排撐開字距 */
 }
-</style>
+</style><script>window.__ISSUE__="2026-08-29";</script><script defer src="../assets/reader.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1394,9 +1405,4 @@ SpaceX計畫建造全球最大太空港
 <p>自由是另一回事。他偶爾也會逃獄。1967年，他被關在最低安全級別，還算會修車，他偷了一輛卡車，開到麻薩諸塞州溫特沃斯，整整十二天在路上。1975年他獲得假釋，但十個月內就被抓了，罪名是小偷小摸和持有武器。所以他又回到監獄。他的原判包括假釋的可能，每隔幾年會評估一次，但那次不幸的經歷後，他就不再申請假釋了。他告訴奎因，說他不想假釋是胡說，但後來似乎不太確定。1974年他被允許回家過聖誕節，但當天就又回去了。監獄安全、有規律。自由卻困難，或許他已經失去了習慣。或許他不再嫉妒那些鳥，它們曾被他餐桌上的麵包填滿，然後飛走。 ■</p>
 </article>
 <footer>由本機 Ollama + qwen3:8b 翻譯產生 · 2026-09-16 02:49</footer>
-</div><a href="../index.html" aria-label="回目錄"
- style="position:fixed;right:16px;bottom:16px;z-index:50;
- padding:11px 16px;border-radius:999px;background:#e3120b;color:#fff;
- text-decoration:none;font:600 15px/1 'Noto Sans TC','PingFang TC',system-ui,sans-serif;
- box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent">☰ 目錄</a>
-</body></html>
+</div></body></html>
