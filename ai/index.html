@@ -940,7 +940,7 @@ label.task input:checked+.task-text{color:var(--ink-3);text-decoration:line-thro
 <p><strong>一句話重點：量化等級決定權重佔多少記憶體與每個 token 要讀多少 bytes；Q4_K_M 是預設起點，品質差異要用自己的評估集量。</strong></p>
 <h3 id="day01-5-kv-cache-與-gqa-context-越長越吃記憶體">5. KV cache 與 GQA：context 越長越吃記憶體<a class="anchor" href="#day01-5-kv-cache-與-gqa-context-越長越吃記憶體" aria-label="連結">#</a></h3>
 <p>權重之外，第二塊吃記憶體的是 KV cache。Transformer 每一層都會對每個 token 算出 Key 與 Value 向量，後面的 token 要「回頭看」前面的 token 時就用它們。如果不存起來，每產生一個 token 就要把整段重算一遍。存起來的這塊就是 KV cache，它跟 context 長度與同時處理的請求數成正比：</p>
-<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>KV&#x000A0;bytes</mtext><mo>&#x0003D;</mo><mn>2</mn><mo>&#x000D7;</mo><mtext>layers</mtext><mo>&#x000D7;</mo><mtext>kv\_heads</mtext><mo>&#x000D7;</mo><mtext>head\_dim</mtext><mo>&#x000D7;</mo><mtext>context</mtext><mo>&#x000D7;</mo><mtext>batch</mtext><mo>&#x000D7;</mo><mtext>bytes\_per\_element</mtext></mrow></math></div><p>以 Qwen3-8B 為例（<code>config.json</code>：<code>num_hidden_layers</code> 36、<code>num_attention_heads</code> 32、<code>num_key_value_heads</code> 8、<code>head_dim</code> 128，KV 用 FP16 即 2 bytes）：</p>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>KV&#x000A0;bytes</mtext><mo>&#x0003D;</mo><mn>2</mn><mo>&#x000D7;</mo><mtext>layers</mtext><mo>&#x000D7;</mo><mtext>kv_heads</mtext><mo>&#x000D7;</mo><mtext>head_dim</mtext><mo>&#x000D7;</mo><mtext>context</mtext><mo>&#x000D7;</mo><mtext>batch</mtext><mo>&#x000D7;</mo><mtext>bytes_per_element</mtext></mrow></math></div><p>以 Qwen3-8B 為例（<code>config.json</code>：<code>num_hidden_layers</code> 36、<code>num_attention_heads</code> 32、<code>num_key_value_heads</code> 8、<code>head_dim</code> 128，KV 用 FP16 即 2 bytes）：</p>
 <ul>
 <li>每個 token：2 × 36 × 8 × 128 × 2 = 147,456 bytes = 144 KB</li>
 <li>8K context：144 KB × 8192 ≈ 1.125 GiB</li>
@@ -4693,7 +4693,7 @@ HNSW 的原始論文：多層鄰居圖、從上層往下貪婪搜尋，達到近
 <h3 id="day05-3-context-預算-k-chunk-長度與-num_ctx">3. Context 預算：k、chunk 長度與 num_ctx<a class="anchor" href="#day05-3-context-預算-k-chunk-長度與-num_ctx" aria-label="連結">#</a></h3>
 <p>一次 RAG 請求的輸入長度大約是：</p>
 <div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>T</mi><mrow><mtext>prompt</mtext></mrow></msub><mo>&#x02248;</mo><msub><mi>T</mi><mrow><mtext>system</mtext></mrow></msub><mo>&#x0002B;</mo><mi>k</mi><mo>&#x000D7;</mo><mo stretchy="false">&#x00028;</mo><msub><mover><mrow><mi>T</mi></mrow><mo stretchy="true">&#x000AF;</mo></mover><mrow><mtext>chunk</mtext></mrow></msub><mo>&#x0002B;</mo><msub><mi>T</mi><mrow><mtext>編號</mtext></mrow></msub><mo stretchy="false">&#x00029;</mo><mo>&#x0002B;</mo><msub><mi>T</mi><mrow><mtext>問題</mtext></mrow></msub></mrow></math></div><p>還要預留回答的空間：</p>
-<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>T</mi><mrow><mtext>prompt</mtext></mrow></msub><mo>&#x0002B;</mo><msub><mi>T</mi><mrow><mtext>回答</mtext></mrow></msub><mo>&#x02264;</mo><mtext>num\_ctx</mtext></mrow></math></div><p>用實際數字算一次（token 為粗估，中文約 1 字 1 token，實際依 tokenizer 而異）：</p>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><msub><mi>T</mi><mrow><mtext>prompt</mtext></mrow></msub><mo>&#x0002B;</mo><msub><mi>T</mi><mrow><mtext>回答</mtext></mrow></msub><mo>&#x02264;</mo><mtext>num_ctx</mtext></mrow></math></div><p>用實際數字算一次（token 為粗估，中文約 1 字 1 token，實際依 tokenizer 而異）：</p>
 <table>
 <thead>
 <tr>
@@ -13004,7 +13004,7 @@ python<span class="w"> </span>-m<span class="w"> </span>uvicorn<span class="w"> 
 <p>讀論文的「Within-Request Short-Term Adaptations」與「Large Information Retrieval Systems」兩節。重點不是抄技巧，而是理解「為什麼系統越大、尾端延遲越主導」這個結構性原因。</p>
 <h3 id="day11-佇列大小到底該設多少">佇列大小到底該設多少<a class="anchor" href="#day11-佇列大小到底該設多少" aria-label="連結">#</a></h3>
 <p><code>max_queue = 4</code> 是怎麼來的？可以從你想要的最壞排隊延遲反推：</p>
-<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>max\_queue</mtext><mo>&#x02248;</mo><mfrac><mrow><msub><mi>W</mi><mrow><mo>max</mo></mrow></msub></mrow><mrow><msub><mi>T</mi><mrow><mtext>service</mtext></mrow></msub></mrow></mfrac></mrow></math></div><p>Wmax 是你能接受的最壞排隊等待，T_service 是一次診斷的 p95 耗時。例如診斷 p95 是 8 秒、你最多能等 40 秒，那 <code>max_queue = 5</code> 左右。同時把 <code>max_queue_wait</code> 設成 Wmax（專案是 60 秒）當第二道保險，因為 T_service 會變。</p>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mtext>max_queue</mtext><mo>&#x02248;</mo><mfrac><mrow><msub><mi>W</mi><mrow><mo>max</mo></mrow></msub></mrow><mrow><msub><mi>T</mi><mrow><mtext>service</mtext></mrow></msub></mrow></mfrac></mrow></math></div><p>Wmax 是你能接受的最壞排隊等待，T_service 是一次診斷的 p95 耗時。例如診斷 p95 是 8 秒、你最多能等 40 秒，那 <code>max_queue = 5</code> 左右。同時把 <code>max_queue_wait</code> 設成 Wmax（專案是 60 秒）當第二道保險，因為 T_service 會變。</p>
 <p>反過來檢查：<code>max_queue</code> 設太大有什麼壞處？佔記憶體（很小，可忽略）不是重點。真正的問題是<strong>後面排隊的那些注定會過期，卻佔著位子讓真正該做的進不來</strong>。所以與其設大，不如設小加上 coalesce。</p>
 <h3 id="day11-監控要輸出什麼">監控要輸出什麼<a class="anchor" href="#day11-監控要輸出什麼" aria-label="連結">#</a></h3>
 <p>上線之後你會需要這些數字，全部都能從現有結構算出來，而且都不需要額外執行緒：</p>
