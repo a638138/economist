@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Agent Skill 與 md 檔：研究整理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#F2F4F3; --paper:#FFFFFF; --ink:#1D2A32; --muted:#56656E; --line:#D3DAD8;
+  --steel:#2E5B78; --steel-soft:#E3ECF2; --amber:#B77A12; --amber-soft:#F6EBD6; --code:#F4F6F7;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --serif:"Noto Serif TC","PMingLiU","Songti TC",serif;
+  --mono:ui-monospace,"Cascadia Code",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#151B1F; --paper:#1C242A; --ink:#E4EAEC; --muted:#9DAAB1; --line:#33414A;
+    --steel:#7FB0D1; --steel-soft:#203341; --amber:#E2A946; --amber-soft:#3A2E17; --code:#141A1E;
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.8;-webkit-text-size-adjust:100%}
+main{max-width:48rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+h1,h2,h3{font-family:var(--serif);line-height:1.35}
+h1{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;margin:0 0 .3rem}
+h2{font-size:1.3rem;font-weight:900;margin:0 0 .7rem}
+h3{font-size:1.05rem;font-weight:600;margin:1.3rem 0 .3rem}
+.part{font-family:var(--serif);font-weight:900;font-size:1.05rem;color:var(--steel);margin:2.4rem 0 .8rem;letter-spacing:.05em}
+.meta{color:var(--muted);font-size:.92rem;margin-bottom:1.5rem}
+.lede{background:var(--paper);border-left:5px solid var(--steel);border-radius:4px;padding:.9rem 1.1rem;margin-bottom:1.2rem}
+.note{background:var(--amber-soft);border-radius:8px;padding:.8rem 1rem;margin:1rem 0;font-size:.95rem}
+nav{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.2rem 0 1rem}
+nav a{font-size:.88rem;text-decoration:none;color:var(--steel);background:var(--steel-soft);padding:.25rem .7rem;border-radius:999px}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem 1rem;margin-bottom:1.3rem}
+a{color:var(--steel);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+ul,ol{padding-left:1.3rem}
+li{margin:.4rem 0}
+.src{display:inline-block;font-size:.8rem;line-height:1.5;margin-left:.3rem;padding:0 .5rem;border-radius:4px;background:var(--amber-soft);color:var(--ink);text-decoration:none;white-space:nowrap}
+.src:hover{text-decoration:underline}
+.new{display:inline-block;font-size:.75rem;line-height:1.5;margin-left:.3rem;padding:0 .45rem;border-radius:4px;background:var(--steel-soft);color:var(--steel);font-weight:700;white-space:nowrap}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.8rem;margin:.8rem 0}
+.cmp div{border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;font-size:.95rem}
+.cmp h4{margin:0 0 .3rem;font-size:1rem}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--steel-soft)}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--muted)}
+</style>
+<meta name="theme-color" content="#0f6f5c"/><style>#econ-back{position:fixed;right:14px;bottom:14px;z-index:99999;padding:9px 15px;border-radius:999px;background:#0f6f5c;color:#fff;text-decoration:none;font:600 14px/1 "Noto Sans TC",system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent}</style></head>
+<body>
+<main>
+
+<h1>AI Agent Skill 與 md 檔：研究整理</h1>
+<div class="meta">整理日期：2026 年 10 月 27 日 · 22 篇參考文獻 · 合併「Skill與說明檔_研究整理_完整版」並補充 8 篇新研究（標示<span class="new">新增</span>）</div>
+
+<div class="lede">一句話總結：<b>skill 和 md 檔不是越多越好，人寫、聚焦、補上模型不知道的領域知識才有效</b>。軟體工程是 skill 效益最低的領域，模型自己生成的 skill 平均沒有幫助；值不值得留，要在自己的專案上用有／無 skill 的對照實驗量。</div>
+
+<div class="note"><b>關於時效</b>：多數研究是 2026 年的 arXiv 預印本，尚未全部經過同儕審查，結果也互有出入。比較耐用的是「方法」（成對比較、用確定型測試判斷、在自己的專案上做實驗），容易過時的是「數字」。</div>
+
+<nav>
+<a href="#a1">Skill 效益</a><a href="#a2">選取與規模</a><a href="#b1">SKILL.md 寫法</a><a href="#b2">說明檔</a><a href="#c1">安全</a><a href="#d1">實務與 A/B</a><a href="#refs">參考文獻</a>
+</nav>
+
+<div class="part">第一部分　Skill 有沒有用</div>
+
+<section id="a1">
+<h2>一、Skill 效益：依領域、模型與 harness 而定</h2>
+<p>理想條件下平均 +16pp，軟體工程或真實檢索情境下幾乎歸零，而且同一個 skill 換個執行環境可能由正轉負。</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>研究</th><th>設計</th><th>關鍵結果</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2602.12670">SkillsBench</a>（NeurIPS 2026）</td><td>84–86 任務 × 7 組模型／harness；無 skill／人工 skill／自生成 skill</td><td>人工 skill 平均 +16.2pp；軟體工程 +4.5pp、醫療 +51.9pp；16 個任務變差；自生成 skill 平均無益；2–3 模組的精簡 skill 勝過完整文件</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench</a>（2026）</td><td>49 個公開 SWE skill × 真實 GitHub repo，約 565 任務</td><td>39 個 skill 零提升，平均 +1.2%；token −78% 到 +451%；7 個專門 skill 最高 +30%；3 個因版本不符最多 −10%</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2604.04323">Skills in the Wild</a>（2026）<span class="new">新增</span></td><td>agent 須從 34k 個真實 skill 自行檢索</td><td>情境越真實效益越低，最難設定接近無 skill；針對任務改寫 skill 可回收大部分損失（Terminal-Bench 2.0：57.7% → 65.5%）</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2610.08875">Downstream Utility</a>（2026）<span class="new">新增</span></td><td>87 任務 × 3 模型 × 3 harness</td><td>9 組配置平均都提升（+4.6 到 +19.5pp），但 36.78% 的任務在某些配置變好、另一些變差；相關度第一的 skill 在 23.19% 的情況不是最好的</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2608.04828">Skill-Use</a>（2026）<span class="new">新增</span></td><td>79 個 skill × 177 任務，分測觸發／遵循／邊界</td><td>最強配置綜合分數只有 0.613；觸發與遵循是兩個獨立瓶頸；排名隨 harness 改變</td></tr>
+</tbody>
+</table>
+</div>
+<h3>為什麼會失敗</h3>
+<p>307 個由 skill 造成的失敗中，選錯 skill 只佔功能失敗的 1.6%；68.8% 是相關的 skill 讓 agent 把範例或預設值當成規則。效率退化有 62.6% 來自過度驗證與過重的流程。<a class="src" href="https://arxiv.org/abs/2608.11888">Agent Skills Can Be Harmful 2026</a></p>
+<ul>
+<li>「相關」不等於「有用」：改用「是否支援任務所需的原子操作」重新排序候選 skill，第一選擇的通過率提升 4.35–5.80pp。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026</a></li>
+<li>模型做不來 skill 推薦的方法時，表現會低於無 skill。例如排考程任務中，skill 推薦用整數規劃，DeepSeek + Codex 不用 skill 時 3 次全過，用了 skill 反而 3 次全部逾時；GPT 用同一組 skill 則在求解器失敗後改用允許的啟發式方法，3 次全過。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026（Finding 1）</a></li>
+<li>在 GPT 與 Qwen 的比較中，基礎較強的模型從 skill 得到的增益較大：三種 harness 下 GPT 的增益都比 Qwen 多 3.45–8.43pp，OpenCode 下兩者差距從 10.73pp 擴大到 19.16pp。這只比較了兩個模型，不宜視為普遍規律；也和 SkillsBench「小模型加 skill 可追上沒有 skill 的大模型」不衝突。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026（RQ1）</a><a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
+</ul>
+<p><b>對你的意義</b>：一般程式知識模型已經會了。skill 的價值在補上它不會的領域流程（OCT 校正、QC 判讀），而且版本要跟著硬體 SDK 與函式庫更新。</p>
+</section>
+
+<section id="a2">
+<h2>二、Skill 越多越好嗎：選取與規模</h2>
+<ul>
+<li>skill 庫從一小組擴充到 202 個時，表現最多下降 21%，主因是選錯的頻率上升。<a class="src" href="https://arxiv.org/abs/2605.24050">More Skills, Worse Agents? 2026</a></li>
+<li>在約 80K 個 skill 的池中，只靠 name + description 選取，準確度比加上內文低 29–44pp。description 是入口，但內文寫得清楚也影響能不能被選中。<a class="src" href="https://arxiv.org/abs/2603.22455">SkillRouter 2026</a><span class="new">新增</span></li>
+<li>agent 常常沒觸發該用的 skill，觸發了也不一定照做。<a class="src" href="https://arxiv.org/abs/2608.04828">Skill-Use 2026</a><span class="new">新增</span></li>
+</ul>
+<p><b>對你的意義</b>：skill 少而精，每個 skill 的描述要能清楚區分「什麼時候該用我」。</p>
+</section>
+
+<div class="part">第二部分　怎麼寫</div>
+
+<section id="b1">
+<h2>三、SKILL.md 怎麼寫</h2>
+<p>好的 SKILL.md 在三組對立之間取得平衡：指引夠用但不寫死、有驗證回饋但不過度、脈絡充足但聚焦。真實世界的 skill 幾乎都沒做到：超過 99% 至少有一種「skill smell」，平均每個 10.5 種。<a class="src" href="https://arxiv.org/abs/2607.01456">From Anatomy to Smells 2026</a><span class="new">新增</span></p>
+<div class="cmp">
+<div><h4>最常見的問題</h4>沒有防止 agent 合理化跳過步驟（94%）、關鍵警告埋在內文（81%）、沒有規劃階段（78%）、沒有驗證步驟（69%）。smell 一旦出現幾乎不會被修掉。<a class="src" href="https://arxiv.org/abs/2607.01456">Anatomy to Smells 2026</a></div>
+<div><h4>刪廢話會變好</h4>55,315 個 skill 中 26.4% 沒有路由描述，超過 60% 內文不可執行。description 壓縮 48%、內文壓縮 39%，品質反而 +2.8%。<a class="src" href="https://arxiv.org/abs/2603.29919">SkillReducer 2026</a></div>
+<div><h4>但不能壓過頭</h4>壓縮比越高、效果越差，代表過度壓縮會丟掉可執行的細節。要刪的是背景與廢話，不是操作步驟。<a class="src" href="https://arxiv.org/abs/2605.09192">Evidence Over Plans 2026</a></div>
+</div>
+<h3>寫作檢核清單</h3>
+<ol>
+<li><b>description</b> = 做什麼 + 何時用 + 關鍵字，第三人稱，不超過 1,024 字元；也寫出「何時不該用」。</li>
+<li><b>內文只放必要規則與步驟</b>，細節、範例參數、疑難排解放 reference 檔，並寫明何時該讀哪一份。</li>
+<li><b>範例標成範例</b>：標出哪些值要替換、哪些結構要保留，避免 agent 把範例當規則。</li>
+<li><b>寫出目標與驗收條件</b>，不要只列一串固定指令；每個關鍵需求寫明檢查什麼、怎樣算通過。</li>
+<li><b>驗證強度依風險調整</b>：寫明哪些改動需要重新驗證，不要預設每次都完整驗證。</li>
+<li><b>寫失敗處理</b>：如何診斷、何時重試、何時換方法或停下來問人。</li>
+<li><b>註明適用版本與環境</b>：版本不符是 skill 反而扣分的原因。</li>
+<li><b>多 skill 協作時寫階段目標或產物依賴</b>：Dependency DAG 比不給組織指示高 6.5–11.4pp，且勝過只寫順序。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026</a></li>
+<li><b>由人寫或人審</b>，不直接採用 AI 自生成的版本。</li>
+</ol>
+</section>
+
+<section id="b2">
+<h2>四、說明檔（CLAUDE.md、AGENTS.md）</h2>
+<p>研究結論互相矛盾：一篇顯示省時省 token，一篇顯示降低成功率、增加成本，第三篇顯示對正確性沒影響。差異主要來自量的指標不同（效率 vs 正確性），以及說明檔是人寫還是 AI 生成。</p>
+<div class="cmp">
+<div><h4>ETH Zurich（2026）</h4>4 種 coding agent：說明檔整體降低成功率、成本增加 20% 以上；人寫的優於 AI 生成的，只在補上訓練資料沒有的知識時才划算。<a class="src" href="https://arxiv.org/abs/2602.11988">Evaluating AGENTS.md 2026</a></div>
+<div><h4>Lulla 等（2026）</h4>Codex、10 個 repo、124 個 PR：中位執行時間 −28.64%、輸出 token −16.58%，但沒有評估正確性。<a class="src" href="https://arxiv.org/abs/2601.20404">AGENTS.md Efficiency 2026</a></div>
+<div><h4>Two-Agent Ablation（2026）<span class="new">新增</span></h4>Claude Code + Codex、288 次執行：說明檔對正確性的影響不超過 10–15pp；失敗多半是實作能力不足，不是缺 repo 知識。<a class="src" href="https://arxiv.org/abs/2607.27250">Ablation 2026</a></div>
+</div>
+<p>大家實際上怎麼寫：分析 2,303 個說明檔，最常寫測試流程（75.9%）、實作細節、架構，很少寫安全與效能規範，且像設定檔一樣持續小幅新增。<a class="src" href="https://arxiv.org/abs/2511.12884">Agent READMEs 2025</a></p>
+<h3>可行的寫法</h3>
+<ul>
+<li>只寫程式碼看不出來、又會悄悄出錯的規則：特殊 build 指令、單位與座標慣例、硬體相關限制。</li>
+<li>不寫架構介紹、目錄說明、用了哪些套件：agent 讀程式碼就知道。</li>
+<li>最重要的規則放最前面：模型在 500 條指令時遵守率只有 68%，且偏好較早出現的指令；中段資訊最容易被忽略。<a class="src" href="https://arxiv.org/abs/2507.11538">IFScale 2025</a><a class="src" href="https://arxiv.org/abs/2307.03172">Lost in the Middle 2024</a></li>
+<li>不要讓 AI 自動產生整份說明檔再直接用。</li>
+</ul>
+</section>
+
+<div class="part">第三部分　安全與實務</div>
+
+<section id="c1">
+<h2>五、Skill 安全</h2>
+<p>從外部安裝的 skill 約四分之一含漏洞，要當成第三方套件審查。</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>研究</th><th>樣本</th><th>結果</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2601.10338">Agent Skills in the Wild</a>（2026）</td><td>31,132 個 skill</td><td>26.1% 至少含一個漏洞；附帶腳本的 skill 含漏洞機率是純指令型的 2.12 倍</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.06547">Malicious Agent Skills</a>（2026）<span class="new">新增</span></td><td>98,380 個 skill 行為驗證</td><td>確認 157 個惡意 skill、632 個漏洞，分為竊取憑證與劫持 agent 決策兩類</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2604.03070">Credential Leakage</a>（2026）<span class="new">新增</span></td><td>17,022 個 skill</td><td>520 個 skill 有 1,708 個憑證外洩問題，歸納出 10 種外洩模式</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>對你的意義</b>：安裝前讀完 SKILL.md 與所有腳本，留意 HTML 註解等隱藏指令；不在 skill 裡寫入 API key 或密碼。</p>
+</section>
+
+<section id="d1">
+<h2>六、實務建議與 A/B 評估</h2>
+<p>研究結論只能告訴你從哪裡下手。skill 值不值得留，要在自己的專案上量。</p>
+<div class="cmp">
+<div><h4>適合寫成 skill</h4>雙 COG 校正、k(n) 校正表建立、QC 指標判讀、特定 SDK 版本的初始化順序與陷阱：模型訓練時幾乎沒看過的領域流程。</div>
+<div><h4>不適合寫成 skill</h4>一般 C++ 風格、通用除錯技巧、套件使用教學：模型已經會了，寫了大多只增加 token。</div>
+</div>
+<h3>簡易 A/B 評估流程</h3>
+<ol>
+<li>挑 5–10 個有明確驗收條件的真實任務，最好能用測試或腳本自動判定通過與否。</li>
+<li>每個任務在「無 skill」與「有 skill」各跑 3 次，固定同一模型與 harness（換 harness 結果就可能翻轉）。</li>
+<li>記錄通過率、總 token、執行時間；有 skill 時檢查 agent 是否真的觸發並照做。</li>
+<li>通過率沒提升、token 卻明顯增加的 skill，刪掉或精簡；通過率下降的，檢查是否有範例被當規則、版本不符、流程過重。</li>
+<li>模型或 SDK 升級後重跑一次，skill 跟著更新。</li>
+</ol>
+<p>「完整版」整理中的 CLAUDE.md（OCT Pipeline）與 SKILL.md（dual-cog-calibration）範例已符合上述原則，可以直接當作第一個 A/B 測試對象。</p>
+</section>
+
+<section id="refs">
+<h2>參考文獻</h2>
+<p>建議閱讀順序：SkillsBench → SWE-Skills-Bench → Evaluating AGENTS.md → From Anatomy to Smells → Downstream Utility。</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>文獻</th><th>主題</th><th>發表</th><th>來源</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2610.08875">An Empirical Study of Agent Skills' Downstream Utility</a></td><td>Skill 效益、寫作實務</td><td>arXiv 2026/10</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2608.04828">Skill-Use: Can LLMs Actually Use Skills in Agentic Harnesses?</a></td><td>觸發與遵循</td><td>arXiv 2026/8</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2608.11888">Agent Skills Can Be Harmful</a></td><td>失敗原因</td><td>arXiv 2026/8</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2608.06891">SkillEval</a></td><td>Skill 品質評分</td><td>arXiv 2026/8</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2607.27250">Do Context Files Help Coding Agents? A Two-Agent Ablation</a></td><td>說明檔</td><td>arXiv 2026/7</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2607.01456">From Anatomy to Smells: An Empirical Study of SKILL.md</a></td><td>SKILL.md 寫法</td><td>arXiv 2026/7</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2606.11435">Agent Skill Evaluation and Evolution（綜述）</a></td><td>評估綜述</td><td>arXiv 2026/6</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2605.24050">More Skills, Worse Agents?</a></td><td>Skill 數量</td><td>Agent Skills '26 Workshop</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2605.09192">Evidence Over Plans</a></td><td>壓縮與蒸餾</td><td>arXiv 2026/5</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2604.04323">How Well Do Agentic Skills Work in the Wild</a></td><td>真實檢索情境</td><td>arXiv 2026/4</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2604.03070">How Your Credentials Are Leaked by LLM Agent Skills</a></td><td>安全</td><td>arXiv 2026/4</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2603.29919">SkillReducer</a></td><td>Token 效率</td><td>arXiv 2026/3</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2603.22455">SkillRouter</a></td><td>Skill 選取</td><td>arXiv 2026/3</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench</a></td><td>SWE skill 效益</td><td>arXiv 2026/3</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.12670">SkillsBench</a></td><td>Skill 效益基準</td><td>NeurIPS 2026</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.11988">Evaluating AGENTS.md</a></td><td>說明檔</td><td>arXiv 2026/2</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.06547">Malicious Agent Skills in the Wild</a></td><td>安全</td><td>arXiv 2026/2</td><td>新增</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2601.20404">On the Impact of AGENTS.md Files on the Efficiency of AI Coding Agents</a></td><td>說明檔效率</td><td>JAWs 2026</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2601.10338">Agent Skills in the Wild: Security Vulnerabilities at Scale</a></td><td>安全</td><td>arXiv 2026/1</td><td>速覽</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2511.12884">Agent READMEs</a></td><td>說明檔內容</td><td>arXiv 2025/11</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2507.11538">IFScale: How Many Instructions Can LLMs Follow at Once?</a></td><td>指令數量</td><td>arXiv 2025</td><td>完整版</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2307.03172">Lost in the Middle</a></td><td>長上下文位置</td><td>TACL 2024</td><td>完整版</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<footer>本頁為研究整理，數字以各論文的實驗條件為準。標示「完整版」或「速覽」的文獻數字取自資料夾內既有整理，本次未重新核對原文；寫作檢核清單與 A/B 流程為整理者依研究結論提出，並非論文內容。</footer>
+
+</main>
+<a id="econ-back" href="../index.html">← 筆記目錄</a></body>
+</html>

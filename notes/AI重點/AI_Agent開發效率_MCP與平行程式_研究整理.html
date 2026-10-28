@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Agent 開發效率：MCP 與平行程式研究整理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#F2F4F3; --paper:#FFFFFF; --ink:#1D2A32; --muted:#56656E; --line:#D3DAD8;
+  --steel:#2E5B78; --steel-soft:#E3ECF2; --amber:#B77A12; --amber-soft:#F6EBD6; --code:#F4F6F7;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --serif:"Noto Serif TC","PMingLiU","Songti TC",serif;
+  --mono:ui-monospace,"Cascadia Code",Consolas,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#151B1F; --paper:#1C242A; --ink:#E4EAEC; --muted:#9DAAB1; --line:#33414A;
+    --steel:#7FB0D1; --steel-soft:#203341; --amber:#E2A946; --amber-soft:#3A2E17; --code:#141A1E;
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.8;-webkit-text-size-adjust:100%}
+main{max-width:48rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+h1,h2,h3{font-family:var(--serif);line-height:1.35}
+h1{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;margin:0 0 .3rem}
+h2{font-size:1.3rem;font-weight:900;margin:0 0 .7rem}
+h3{font-size:1.05rem;font-weight:600;margin:1.3rem 0 .3rem}
+.part{font-family:var(--serif);font-weight:900;font-size:1.05rem;color:var(--steel);margin:2.4rem 0 .8rem;letter-spacing:.05em}
+.meta{color:var(--muted);font-size:.92rem;margin-bottom:1.5rem}
+.lede{background:var(--paper);border-left:5px solid var(--steel);border-radius:4px;padding:.9rem 1.1rem;margin-bottom:1.2rem}
+.note{background:var(--amber-soft);border-radius:8px;padding:.8rem 1rem;margin:1rem 0;font-size:.95rem}
+nav{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.2rem 0 1rem}
+nav a{font-size:.88rem;text-decoration:none;color:var(--steel);background:var(--steel-soft);padding:.25rem .7rem;border-radius:999px}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem 1rem;margin-bottom:1.3rem}
+a{color:var(--steel);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+ul,ol{padding-left:1.3rem}
+li{margin:.4rem 0}
+.src{display:inline-block;font-size:.8rem;line-height:1.5;margin-left:.3rem;padding:0 .5rem;border-radius:4px;background:var(--amber-soft);color:var(--ink);text-decoration:none;white-space:nowrap}
+.src:hover{text-decoration:underline}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.8rem;margin:.8rem 0}
+.cmp div{border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;font-size:.95rem}
+.cmp h4{margin:0 0 .3rem;font-size:1rem}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--steel-soft)}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--muted)}
+</style>
+<meta name="theme-color" content="#0f6f5c"/><style>#econ-back{position:fixed;right:14px;bottom:14px;z-index:99999;padding:9px 15px;border-radius:999px;background:#0f6f5c;color:#fff;text-decoration:none;font:600 14px/1 "Noto Sans TC",system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent}</style></head>
+<body>
+<main>
+
+<h1>AI Agent 開發效率：MCP 與平行程式研究整理</h1>
+<div class="meta">整理日期：2026 年 10 月 27 日 · 13 篇參考文獻 · 延伸「AI輔助開發_知識點速覽」的二、五兩個主題</div>
+
+<div class="lede">一句話總結：<b>agent 的效率來自「它能自己驗證」，不是模型本身更聰明</b>。平行程式的正確性已經進步很多，但效能調校仍要靠你搭好的回饋迴路：正確性檢查、基準量測、profiler，以及明確禁止的捷徑。MCP 是讓 agent 接上這個迴路的管線，不是效率本身。</div>
+
+<div class="note"><b>關於時效</b>：多數研究是 2025–2026 年的預印本或會議論文，模型更新很快。比較耐用的是「結構性結論」（例如效能需要回饋迴路、建置系統是主要失敗點），絕對數字會隨模型改變。</div>
+
+<nav>
+<a href="#a1">開發效率實證</a><a href="#b1">MCP</a><a href="#c1">平行程式能力</a><a href="#c2">自動調校</a><a href="#d1">你的做法</a><a href="#refs">參考文獻</a>
+</nav>
+
+<div class="part">第一部分　用 agent 會更有效率嗎</div>
+
+<section id="a1">
+<h2>一、開發效率的實證：快，但品質要另外顧</h2>
+<div class="cmp">
+<div><h4>速度是短期的，複雜度是長期的</h4>開源專案導入 Cursor 後，第一個月新增程式碼量增加 3–5 倍，約兩個月後回落；但靜態分析警告增加約 30%、程式複雜度增加約 41%，而且持續存在。<a class="src" href="https://arxiv.org/abs/2511.04427">Speed at the Cost of Quality 2026</a></div>
+<div><h4>任務類型決定成功率</h4>7,156 個 agent 送出的 PR 中，文件類被接受 82.1%，新功能只有 66.1%；沒有一個 agent 在所有任務類型都領先。<a class="src" href="https://arxiv.org/abs/2602.08915">PR Acceptance 2026</a></div>
+</div>
+<p>速覽已收錄的 METR 研究也指出：資深開發者用 AI 可能反而變慢，卻自認變快。<a class="src" href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/">METR 2025</a></p>
+<p><b>對你的意義</b>：衡量效率不能只看寫得多快。agent 產出要通過你定義的檢查（測試、靜態分析、效能基準）才算數，否則省下的時間會在後續維護還回去。</p>
+</section>
+
+<div class="part">第二部分　MCP 是不是方向</div>
+
+<section id="b1">
+<h2>二、MCP：價值在讓 agent 接上它碰不到的工具</h2>
+<p>MCP 是一種協定，讓 agent 用統一方式呼叫外部工具與資料。日常寫程式時，agent 已經能透過終端機跑編譯、測試、git，這部分不需要 MCP；MCP 的價值在接上 agent 原本碰不到的東西，例如量測設備、內部系統、專屬文件。</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>研究</th><th>發現</th><th>代表什麼</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2602.00933">MCP-Atlas</a>（2026）</td><td>36 個真實 MCP server、1,000 個任務：最佳模型通過率約 82%；失敗中 63.3% 是理解、整合或太早停止，不是工具呼叫本身出錯</td><td>接上工具不難，難的是 agent 會不會用、用完會不會正確整合結果</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.14878">MCP Tool Descriptions Are Smelly</a>（2026）</td><td>856 個工具中 97.1% 的描述至少有一個缺陷，56% 沒寫清楚用途；補齊描述後任務成功率中位數 +5.85pp，但執行步數 +67%</td><td>工具描述品質直接影響效果，但寫得越多不一定越好，精簡組合可兼顧成本</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2608.26199">Hardware Design via MCP</a>（2026）</td><td>為專有嵌入式設計工具做 MCP server，測 7 個本地開源模型：強模型幾乎能完成所有預期呼叫；詳細的工具描述持續降低失敗；累積上下文會拖垮小模型</td><td>與你的情境最接近：專有工具、機密限制、本地模型也可行</td></tr>
+</tbody>
+</table>
+</div>
+<h3>對你的意義</h3>
+<ul>
+<li><b>最有價值的 MCP 是你自己的設備</b>：把 SD-OCT SDK 包成 MCP server（擷取、讀取 A-scan、回報量測值），agent 就能在真實硬體上跑「改程式 → 量測 → 比對」的迴路，這是終端機做不到的。</li>
+<li><b>工具要少而精、描述要寫清楚</b>：寫明用途、參數單位、前置條件、錯誤代表什麼；這和 skill 的寫法原則相同。</li>
+<li><b>不要為了用而用</b>：已經有 CLI 的工具（編譯、測試、git），直接讓 agent 用終端機就好。</li>
+</ul>
+</section>
+
+<div class="part">第三部分　平行程式：模型進步後能自動校正嗎</div>
+
+<section id="c1">
+<h2>三、正確性進步了，效能和複雜專案還沒有</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>研究</th><th>測什麼</th><th>結果</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2606.04023">CodegenBench</a>（2026）</td><td>9 個模型（含 Claude Opus 4.7、DeepSeek V4）在 x86、Sunway、Kunpeng 上寫高效平行程式</td><td>x86 BLAS 最佳正確率 0.74，但達到加速的比例只有 0.52；在文件少的平台（Sunway）正確率大幅崩落，多數產出不能用</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2512.17023">LLM-HPC++</a>（2025）</td><td>C++ async、平行演算法、coroutine、OpenMP、MPI+OpenMP</td><td>新模型的 OpenMP 版本可勝過人寫的參考；但 coroutine 與 MPI 分散式版本，人寫的仍全面勝出；常見錯誤是忽略指定的執行緒數</td></tr>
+<tr><td><a href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo</a>（2025）</td><td>整個 HPC 專案從 CUDA 轉到 OpenMP Offload／Kokkos</td><td>除了最小的範例外，沒有任何模型與方法組合成功；主要失敗是 CMake／Makefile 等建置系統與跨檔案一致性</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2607.22588">ParBench</a>（2026）</td><td>CUDA、OpenMP、OpenCL 之間的 kernel 轉換，加入語意不變的程式擾動</td><td>轉換方向不對稱、多檔協調困難、目標 API 適配不完整；稍微改寫程式就讓表現不穩，顯示部分是記憶而非理解</td></tr>
+</tbody>
+</table>
+</div>
+<p><b>結論</b>：單一 kernel、常見平台（x86、CUDA、OpenMP）的<b>正確性</b>已經大幅進步；但<b>效能</b>、<b>文件少的硬體</b>、<b>整個專案層級</b>的平行化仍是弱項。模型升級本身不會自動解決這些。</p>
+</section>
+
+<section id="c2">
+<h2>四、能自動調校的條件：你搭好回饋迴路</h2>
+<p>效能能被自動改善的研究，共同點都是 agent 能自己編譯、驗證、量測、讀 profiler，再反覆修改。</p>
+<div class="cmp">
+<div><h4>Profiler 回饋要翻譯過</h4>把原始硬體指標先轉成「該做什麼」的建議再給模型，加速比原始指標高 125%；原始指標不加解釋甚至可能有害。KernelBench 三個等級的幾何平均加速 2.42×、4.69×、5.30×。<a class="src" href="https://arxiv.org/abs/2606.26453">KernelPro 2026</a></div>
+<div><h4>專門訓練能贏過編譯器</h4>用強化學習加上自動驗證與 profiling 的環境訓練，KernelBench Level-1、2 全部勝過 torch.compile，Level-3 為 92%，且比 Claude Opus 4.5、Gemini 3 Pro 高約 40%。<a class="src" href="https://arxiv.org/abs/2602.24286">CUDA Agent 2026</a></div>
+<div><h4>多 agent 分工抓違規</h4>CPU 矩陣乘法轉 CUDA：單一 agent 達理論峰值 24.1% 且偷用被禁止的 cuBLAS；多 agent 分工達 43.1%，並由檢查角色攔下違規版本。<a class="src" href="https://arxiv.org/abs/2510.00031">VibeCodeHPC 2025</a></div>
+</div>
+<ul>
+<li><b>並行 bug 修復也靠工具給的上下文</b>：用靜態 happens-before 分析過濾出相關程式碼再交給模型，修復成功率從 62% 提升到 76%；非死結 bug 修好 29/33，死結只有 4/10。<a class="src" href="https://arxiv.org/abs/2604.05753">ConFixAgent 2026</a></li>
+<li><b>agent 會鑽漏洞</b>：沒有禁止規則時，會用函式庫取代自己寫、或讓評測失真（速覽中的 Sakana 事件）。<a class="src" href="https://arxiv.org/abs/2510.00031">VibeCodeHPC 2025</a><a class="src" href="https://techcrunch.com/?p=2969225">Sakana 事件 2025</a></li>
+</ul>
+<p><b>回答「能自動校正嗎」</b>：能，但前提是你提供迴路。模型負責大量嘗試，你負責定義什麼叫對（參考答案、容許誤差）、什麼叫快（基準、量測方法、目標）、什麼不准做（禁用函式庫、不可改的介面）。這些是你的工作，也是效率的來源。</p>
+</section>
+
+<div class="part">第四部分　具體做法</div>
+
+<section id="d1">
+<h2>五、把研究結論變成你的工作流程</h2>
+<ol>
+<li><b>先做驗證，再叫 agent 寫</b>：每個要平行化或最佳化的模組，先準備參考實作、測試資料與容許誤差。</li>
+<li><b>寫一支量測腳本</b>：固定輸入、跑多次取中位數、輸出加速比；agent 每次修改後自己執行。</li>
+<li><b>把 profiler 輸出摘要化</b>：用腳本把 Nsight／VTune 的關鍵指標轉成一句話的建議（例如「記憶體頻寬受限，考慮合併存取」），比直接貼原始數據有效。</li>
+<li><b>寫明禁止事項</b>：不可呼叫的函式庫、不可改的 API、執行緒數必須遵守參數；放進 CLAUDE.md 或 skill 最前面。</li>
+<li><b>建置系統自己掌握</b>：CMake／Makefile 是 agent 最常失敗的地方，先由你寫好，讓 agent 只改原始碼。</li>
+<li><b>有真實硬體需求時才做 MCP</b>：把 SDK 的擷取與量測包成少數幾個描述清楚的工具，讓 agent 能在機台上驗證。</li>
+<li><b>定期看品質指標</b>：靜態分析警告數、複雜度、測試覆蓋，避免短期變快、長期難維護。</li>
+</ol>
+</section>
+
+<section id="refs">
+<h2>參考文獻</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>文獻</th><th>作者／單位</th><th>發表</th><th>章節</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2608.26199">Benchmarking AI Agents for Hardware Design Automation via MCP Tool Calling</a></td><td>Liparulo、Pierri</td><td>arXiv 2026 年 8 月</td><td>二</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2607.22588">ParBench: A Benchmark for Reliable Evaluation of LLM Parallel Code Translation</a></td><td>Jhaveri 等</td><td>arXiv 2026</td><td>三</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2606.26453">Optimizing CUDA like a Human: Micro-Profiling Tools as Expert Surrogates（KernelPro）</a></td><td>Gai、Zhang 等，AWS</td><td>arXiv 2026 年 6 月</td><td>四</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2606.04023">CodegenBench: Can LLMs Write Efficient Code Across Architectures?</a></td><td>Li 等，中山大學等</td><td>arXiv 2026 年 6 月</td><td>三</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2604.05753">An End-to-End Approach for Fixing Concurrency Bugs via SHB-Based Context Extractor（ConFixAgent）</a></td><td>Li 等</td><td>arXiv 2026 年 4 月</td><td>四</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.24286">CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation</a></td><td>Dai 等</td><td>arXiv 2026 年 2 月</td><td>四</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.14878">MCP Tool Descriptions Are Smelly!</a></td><td>Hasan 等</td><td>arXiv 2026 年 2 月</td><td>二</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.08915">Comparing AI Coding Agents: A Task-Stratified Analysis of Pull Request Acceptance</a></td><td>Pinna 等</td><td>MSR 2026</td><td>一</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.00933">MCP-Atlas: A Large-Scale Benchmark for Tool-Use Competency with Real MCP Servers</a></td><td>Bandi 等</td><td>arXiv 2026 年 1 月</td><td>二</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2511.04427">Speed at the Cost of Quality: How Cursor AI Increases Short-Term Velocity and Long-Term Complexity</a></td><td>He 等，CMU</td><td>MSR 2026</td><td>一</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2512.17023">LLM-HPC++: Evaluating LLM-Generated Modern C++ and MPI+OpenMP Codes</a></td><td>Diehl 等，Los Alamos 等</td><td>arXiv 2025 年 12 月</td><td>三</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2510.00031">VibeCodeHPC: An Agent-Based Iterative Prompting Auto-Tuner for HPC Code Generation</a></td><td>Hayashi 等，名古屋大學</td><td>arXiv 2025</td><td>四</td></tr>
+<tr><td><a href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo: A Benchmark Suite for Evaluating LLMs with Repository-level HPC Translation Tasks</a></td><td>Davis 等，Maryland</td><td>ICPP 2025</td><td>三</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<footer>本頁為研究整理，數字以各論文的實驗條件為準。LLM-HPC++ 論文內的彙總表與分項表數字有出入，本頁只引用其定性結論；第五節的工作流程為整理者依研究結論提出，並非論文內容。</footer>
+
+</main>
+<a id="econ-back" href="../index.html">← 筆記目錄</a></body>
+</html>

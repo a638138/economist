@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#e3120b"/>
+<link rel="manifest" href="../manifest.webmanifest"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Economist 中文"/><link rel="apple-touch-icon" href="../assets/icon-180.png"/><link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png"/>
+<title>個人筆記 · 目錄</title>
+<script>try{var s=JSON.parse(localStorage.getItem("econ.settings")||"{}");if(s.theme&&s.theme!=="light")document.documentElement.setAttribute("data-theme",s.theme);}catch(e){}</script><style>
+html[data-theme="sepia"]{--bg:#f4ecd8;--ink:#3f342a;--card:#faf3e3;--line:#e3d7bd;--grey:#8a7a60}
+html[data-theme="grey"]{--bg:#e9eaec;--ink:#1c1e21;--card:#f7f8fa;--line:#d4d7dc;--grey:#6b7078}
+html[data-theme="dark"]{--bg:#15171a;--ink:#e4e1db;--card:#1e2126;--line:#333840;--grey:#9aa0a6}
+html[data-theme="dark"] .note{background:#241a19;color:#d8cbc9}
+html[data-theme="dark"] p.title-en{color:#8f8b85}
+html[data-theme="dark"] h3.rubric{color:#b8b3ab}
+html[data-theme="dark"] .card{background:var(--card)}
+html[data-theme="dark"] img.cover{opacity:.94}
+html{transition:background-color .2s}
+</style>
+<style>
+:root{--red:#e3120b;--ink:#121212;--grey:#6b6b6b;--line:#e2e0dd;--bg:#f7f5f2;--card:#fff}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+ font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:0 12px 64px}
+header{position:sticky;top:0;z-index:10;text-align:center;
+ padding:14px 12px calc(12px + env(safe-area-inset-top));
+ background:var(--bg);border-bottom:3px solid var(--red)}
+header .brand{color:var(--red);font-weight:800;font-size:24px;letter-spacing:.02em}
+header .sub{color:var(--grey);font-size:13px;margin-top:3px;letter-spacing:.06em}
+.hbtns{position:absolute;top:6px;right:8px;display:flex;gap:2px}
+.hbtns button{width:40px;height:40px;padding:0;border:0;border-radius:50%;color:var(--ink);
+ background:transparent;font-size:20px;line-height:1;cursor:pointer;
+ -webkit-tap-highlight-color:transparent}
+.hbtns button:active{background:rgba(0,0,0,.10)}
+.tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:12px 0 2px}
+.tabs .tab{text-decoration:none;color:var(--grey);font-weight:700;font-size:15px;
+ padding:8px 18px;border-radius:999px;border:1px solid var(--line);background:var(--card);
+ -webkit-tap-highlight-color:transparent}
+.tabs .tab.on{background:var(--red);color:#fff;border-color:var(--red)}
+.month{margin-top:26px}
+.month h2{font-size:18px;color:var(--red);border-bottom:2px solid var(--line);
+ padding-bottom:7px;margin:0 0 14px;font-weight:800}
+.list{display:grid;gap:12px}
+.note{display:block;text-decoration:none;color:var(--ink);background:var(--card);
+ border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;
+ padding:13px 15px;box-shadow:0 1px 3px rgba(0,0,0,.08);
+ -webkit-tap-highlight-color:transparent;transition:transform .14s,box-shadow .14s}
+.note:active{transform:scale(.98)}
+.note .nt{font-weight:800;font-size:17px;line-height:1.4}
+.note .nl{color:var(--grey);font-size:14px;margin-top:5px;line-height:1.55}
+.note .nd{color:var(--red);font-size:12px;font-weight:700;margin-top:7px;
+ font-variant-numeric:tabular-nums}
+footer{text-align:center;color:var(--grey);font-size:12px;margin-top:44px;
+ padding-top:18px;border-top:1px solid var(--line)}
+@media (min-width:640px){
+ .wrap{padding:0 20px 80px}
+ header{position:static;padding:44px 0 26px;margin-bottom:8px}
+ header .brand{font-size:36px}
+ header .sub{font-size:15px;margin-top:8px}
+ .month{margin-top:40px}
+ .list{grid-template-columns:repeat(2,1fr);gap:16px}
+ .note:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.14)}
+ .hbtns{top:50%;transform:translateY(-50%);right:16px}
+}
+</style></head>
+<body><div class="wrap">
+<header>
+ <div class="brand">個人筆記</div>
+ <div class="sub">研究整理 · 共 5 篇</div>
+ <div class="hbtns">
+  <button id="fsBtn" aria-label="全螢幕" title="全螢幕">⛶</button>
+  <button id="themeBtn" aria-label="切換背景色" title="切換背景色">◐</button>
+ </div>
+</header>
+<nav class="tabs"><a class="tab" href="../">雜誌</a><a class="tab" href="../ai/">AI 教材</a><a class="tab on" href="../notes/">筆記</a></nav>
+<section class="month"><h2>AI重點</h2><div class="list"><a class="note" href="AI%E9%87%8D%E9%BB%9E/AI_Agent_Skill%E8%88%87md%E6%AA%94_%E7%A0%94%E7%A9%B6%E6%95%B4%E7%90%86.html"><div class="nt">AI Agent Skill 與 md 檔：研究整理</div><div class="nl">skill 和 md 檔不是越多越好，人寫、聚焦、補上模型不知道的領域知識才有效。軟體工程是 skill 效益最低的領域，模型自己生成的 skill 平均沒有幫助；值不值得留，要在…</div><div class="nd">2026/10/27</div></a><a class="note" href="AI%E9%87%8D%E9%BB%9E/AI_Agent%E9%96%8B%E7%99%BC%E6%95%88%E7%8E%87_MCP%E8%88%87%E5%B9%B3%E8%A1%8C%E7%A8%8B%E5%BC%8F_%E7%A0%94%E7%A9%B6%E6%95%B4%E7%90%86.html"><div class="nt">AI Agent 開發效率：MCP 與平行程式研究整理</div><div class="nl">agent 的效率來自「它能自己驗證」，不是模型本身更聰明。平行程式的正確性已經進步很多，但效能調校仍要靠你搭好的回饋迴路：正確性檢查、基準量測、profiler，以及明確禁止的捷…</div><div class="nd">2026/10/27</div></a><a class="note" href="AI%E9%87%8D%E9%BB%9E/AI%E8%BC%94%E5%8A%A9%E9%96%8B%E7%99%BC_%E7%9F%A5%E8%AD%98%E9%BB%9E%E9%80%9F%E8%A6%BD.html"><div class="nt">AI 輔助軟體開發：知識點速覽</div><div class="nl">AI 最容易出錯的地方，正是需要領域知識、講究效能、又沒有獨立驗證的地方。你的價值在於定義「什麼叫對」，並把它寫成自動檢查。</div><div class="nd">2026/10/27</div></a><a class="note" href="AI%E9%87%8D%E9%BB%9E/Skill%E8%88%87%E8%AA%AA%E6%98%8E%E6%AA%94_%E7%A0%94%E7%A9%B6%E6%95%B4%E7%90%86_%E5%AE%8C%E6%95%B4%E7%89%88.html"><div class="nt">Skill 與說明檔：研究整理（完整版）</div><div class="nl">人寫、聚焦、少而準、必要規則與範例分開。Skill 用來補模型不會的領域流程，而且大多數 skill 其實沒有幫助，所以要用成對比較驗證；說明檔只寫程式碼看不出來、又會悄悄出錯的規…</div><div class="nd">2026/10/27</div></a><a class="note" href="AI%E9%87%8D%E9%BB%9E/Skill%E8%88%87%E8%AA%AA%E6%98%8E%E6%AA%94%E5%AF%AB%E6%B3%95_%E7%A0%94%E7%A9%B6%E6%95%B4%E7%90%86.html"><div class="nt">Skill 與說明檔怎麼寫：研究整理</div><div class="nl">人寫、聚焦、少而準、重要的放前面。Skill 用來補模型不會的領域流程；說明檔只寫程式碼看不出來、又會悄悄出錯的規則。</div><div class="nd">2026/10/27</div></a></div></section>
+<footer>個人筆記 · 由 build_site.py 自動產生</footer>
+</div>
+<script defer src="../assets/index.js"></script>
+</body></html>
