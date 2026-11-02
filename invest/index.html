@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<link rel="manifest" href="../manifest.webmanifest"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="Economist 中文"/><link rel="apple-touch-icon" href="../assets/icon-180.png"/><link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png"/>
+<title>投資筆記</title>
+<script>try{var t=localStorage.getItem("notes.theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#fbfaf8; --panel:#f3f1ed; --card:#ffffff; --ink:#22201d; --ink-2:#55504a;
+  --ink-3:#847d74; --line:#e2ded7; --line-2:#cfc9c0; --accent:#0f6f5c; --accent-soft:#e3f1ed;
+  --warn-bg:#fdf6e3; --warn-line:#e8d9a8; --code-bg:#f6f4f0; --sel:#cfe9e2;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Hiragino Sans GB",
+         -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,"Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#16181a; --panel:#1c1f22; --card:#1f2225; --ink:#e6e3de; --ink-2:#b4afa7;
+    --ink-3:#8a847b; --line:#2e3236; --line-2:#3d4247; --accent:#5fcfb4; --accent-soft:#1b2f2a;
+    --warn-bg:#2a2519; --warn-line:#4a4028; --code-bg:#1a1d20; --sel:#22463d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16181a; --panel:#1c1f22; --card:#1f2225; --ink:#e6e3de; --ink-2:#b4afa7;
+  --ink-3:#8a847b; --line:#2e3236; --line-2:#3d4247; --accent:#5fcfb4; --accent-soft:#1b2f2a;
+  --warn-bg:#2a2519; --warn-line:#4a4028; --code-bg:#1a1d20; --sel:#22463d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+     font-size:16.5px;line-height:1.9;-webkit-text-size-adjust:100%}
+::selection{background:var(--sel)}
+
+/* ---------- 版面 ---------- */
+.wrap{display:flex;min-height:100vh}
+.side{width:296px;flex:0 0 296px;background:var(--panel);border-right:1px solid var(--line);
+      position:sticky;top:0;height:100vh;overflow-y:auto;overscroll-behavior:contain}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+.day{width:100%;max-width:830px;padding:44px 32px 140px}
+.day[hidden]{display:none}
+
+/* ---------- 側欄 ---------- */
+.brand{padding:22px 20px 14px;border-bottom:1px solid var(--line)}
+.brand h2{margin:0;font-size:15px;letter-spacing:.02em}
+.brand p{margin:6px 0 0;font-size:12.5px;color:var(--ink-3);line-height:1.6}
+.brand a{color:var(--accent);text-decoration:none}
+.tools{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:8px}
+.tools input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--line-2);border-radius:7px;
+  background:var(--card);color:var(--ink);font:inherit;font-size:13.5px}
+.tools button{padding:7px 10px;border:1px solid var(--line-2);border-radius:7px;background:var(--card);
+  color:var(--ink-2);cursor:pointer;font:inherit;font-size:13px}
+.tools button:hover{color:var(--accent);border-color:var(--accent)}
+nav ul{list-style:none;margin:0;padding:0}
+nav>ul{padding:6px 0 60px}
+.nav-group{padding:16px 18px 4px;font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.08em}
+.nav-day{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;
+  font:inherit;font-size:14px;color:var(--ink-2);text-align:left;padding:8px 18px;line-height:1.5}
+.nav-day:hover{color:var(--accent);background:var(--accent-soft)}
+li.active>.nav-day{color:var(--accent);font-weight:600;background:var(--accent-soft);
+  box-shadow:inset 3px 0 0 var(--accent)}
+.nav-title{flex:1;min-width:0}
+.chk{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nav-sub{display:none;padding:0 0 10px}
+li.active>.nav-sub{display:block}
+.nav-sub a{display:block;padding:4px 18px 4px 32px;font-size:13px;color:var(--ink-3);
+  text-decoration:none;line-height:1.55}
+.nav-sub a:hover{color:var(--accent);background:var(--accent-soft)}
+li.hide{display:none}
+
+/* ---------- 內文 ---------- */
+h1{font-size:30px;line-height:1.4;margin:0 0 10px;letter-spacing:.01em}
+h2{font-size:22.5px;margin:0 0 16px;padding-top:6px;line-height:1.45;letter-spacing:.01em;
+   scroll-margin-top:60px}
+h3{font-size:18px;margin:30px 0 12px;line-height:1.5}
+h4{font-size:16px;margin:0 0 6px;color:var(--ink)}
+p{margin:0 0 17px}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+a:hover{border-bottom-color:var(--accent)}
+ul,ol{margin:0 0 17px;padding-left:1.6em}
+li{margin:6px 0}
+b,strong{font-weight:650}
+.meta{color:var(--ink-3);font-size:13.5px;line-height:1.7;margin:0 0 26px;padding-bottom:14px;
+  border-bottom:2px solid var(--accent)}
+.lede{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:6px;
+  padding:14px 18px;margin:0 0 18px}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:9px;
+  padding:12px 16px;margin:0 0 22px;font-size:15px;line-height:1.8}
+section{margin:0;padding:34px 0 6px;border-top:1px solid var(--line)}
+.part{margin:48px 0 0;padding:10px 0;font-size:13px;font-weight:700;color:var(--accent);
+  letter-spacing:.1em}
+.part+section{border-top:2px solid var(--accent)}
+h2 .no{display:inline-block;margin-right:10px;padding:0 9px;border-radius:6px;font-size:14px;
+  line-height:1.9;vertical-align:3px;color:#fff;background:var(--accent)}
+:root[data-theme="dark"] h2 .no{color:var(--bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) h2 .no{color:var(--bg)}}
+ol.points li{margin:9px 0}
+.src{display:inline-block;margin-left:5px;padding:0 7px;border:1px solid var(--line);border-radius:5px;
+  background:var(--panel);color:var(--ink-3);font-size:12px;line-height:1.75;white-space:nowrap;
+  vertical-align:1px}
+.src:hover{color:var(--accent);border-color:var(--accent)}
+.new{display:inline-block;margin-left:5px;padding:0 6px;border-radius:5px;background:var(--accent-soft);
+  color:var(--accent);font-size:11.5px;font-weight:700;line-height:1.75;white-space:nowrap}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:12px;margin:4px 0 20px}
+.cmp>div{border:1px solid var(--line);border-radius:9px;background:var(--card);padding:12px 15px;
+  font-size:15px;line-height:1.8}
+.table-wrap{overflow-x:auto;margin:0 0 22px}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:15px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;line-height:1.7}
+th{background:var(--panel);font-weight:650;font-size:14.5px}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--panel) 45%,transparent)}
+pre{margin:0 0 22px;padding:15px 16px;border:1px solid var(--line);border-radius:9px;
+  background:var(--code-bg);overflow-x:auto;font-family:var(--mono);font-size:13.6px;line-height:1.72}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;
+  color:var(--ink-3);line-height:1.8}
+
+/* 進度列 */
+.progress{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);width:100%;
+  display:flex;justify-content:center}
+.progress-in{width:100%;max-width:830px;padding:9px 32px;display:flex;align-items:center;gap:14px;
+  font-size:13px;color:var(--ink-3)}
+#pos{font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{flex:1;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .1s}
+.pager{display:flex;gap:8px}
+.pager button{font:inherit;font-size:12.5px;padding:4px 11px;border:1px solid var(--line-2);
+  border-radius:6px;background:var(--card);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.pager button:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
+.pager button:disabled{opacity:.38;cursor:default}
+
+/* 手機 */
+.menu-btn{display:none;position:fixed;left:12px;bottom:14px;z-index:30;width:46px;height:46px;
+  border-radius:50%;border:1px solid var(--line-2);background:var(--card);color:var(--ink);
+  font-size:19px;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.18)}
+@media(max-width:900px){
+  .side{position:fixed;z-index:25;left:0;top:0;transform:translateX(-100%);transition:transform .2s;
+    box-shadow:0 0 30px rgba(0,0,0,.2)}
+  .side.open{transform:none}
+  .menu-btn{display:block}
+  .day{padding:28px 18px 120px}
+  .progress-in{padding:9px 18px}
+  h1{font-size:25px}h2{font-size:20px}
+  body{font-size:16px}
+}
+@media print{
+  .side,.progress,.menu-btn,#econ-back{display:none!important}
+  .day{max-width:none;padding:0 0 30px}
+  body{font-size:11pt;line-height:1.7;background:#fff;color:#000}
+}
+</style><meta name="theme-color" content="#0f6f5c"/><style>#econ-back{position:fixed;right:14px;bottom:14px;z-index:99999;padding:9px 15px;border-radius:999px;background:#0f6f5c;color:#fff;text-decoration:none;font:600 14px/1 "Noto Sans TC",system-ui,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent}</style></head>
+<body>
+<div class="wrap">
+  <aside class="side" id="side">
+    <div class="brand">
+      <h2>投資筆記</h2>
+      <p>投資原則與研究・共 1 篇<br><a href="../index.html">← 回雜誌目錄</a></p>
+    </div>
+    <div class="tools">
+      <input id="q" type="search" placeholder="搜尋筆記…" autocomplete="off">
+      <button id="theme" type="button" title="切換亮色／暗色">◐</button>
+    </div>
+    <nav><ul id="nav"><li class="nav-group">投資</li><li data-day="nea0d14"><button class="nav-day" data-go="nea0d14"><span class="nav-title">投資原則手冊：以研究為依據的個人投資規則</span><span class="chk">11/1</span></button><ul class="nav-sub"><li><a href="#nea0d14-h1">核心原則</a></li><li><a href="#nea0d14-h2">財務基礎：先顧好的事</a></li><li><a href="#nea0d14-h3">配置：什麼放多少</a></li><li><a href="#nea0d14-h4">AI 與市場：革命還是泡沫</a></li><li><a href="#nea0d14-h5">執行與成本：怎麼調、什麼時候調</a></li><li><a href="#nea0d14-h6">行為與心態：管住自己</a></li><li><a href="#nea0d14-h7">個股：怎麼判斷要不要留</a></li><li><a href="#nea0d14-h8">專家觀點：怎麼看</a></li><li><a href="#nea0d14-h9">資訊查證：怎麼確保可信</a></li><li><a href="#nea0d14-h10">常見的判斷錯誤</a></li><li><a href="#nea0d14-h11">這套方法的限制</a></li></ul></li></ul></nav>
+  </aside>
+  <div class="main" id="main">
+    <div class="progress"><div class="progress-in">
+      <span id="pos"></span><div class="bar"><i id="bar"></i></div>
+      <div class="pager"><button id="prev" type="button">← 上一篇</button><button id="next" type="button">下一篇 →</button></div>
+    </div></div>
+<article class="day" id="nea0d14" data-title="投資原則手冊：以研究為依據的個人投資規則" hidden>
+
+<h1>投資原則手冊：以研究為依據的個人投資規則</h1>
+<div class="meta">整理日期：2026 年 11 月 1 日 · 35 篇參考文獻</div>
+
+<div class="lede">一句話總結：<b>先處理結構，不靠預測</b>。結構指的是集中度、收入連動和防禦部位。每條原則都標明是「研究」（有研究或數據支持）、「規則」（自己訂的）還是「判斷」（沒有研究給出確切答案）。</div>
+
+<div class="note"><b>公開版說明</b>：本頁已移除個人金額、持股比例與帳戶資訊；規則裡的數字是範例，請依自己的收入、工作與目標調整。內容整理自 2026 年 10 月的討論，以公開研究為依據，不是持牌投顧建議。</div>
+
+<section>
+<h2 id="nea0d14-h1"><span class="no">一</span>核心原則</h2>
+<ol class="points">
+<li><b>指數當主力，個股限量</b>：多數專業經理人長期贏不了指數，少數股票創造了大部分財富。</li>
+<li><b>穿透看集中</b>：把 ETF 拆開來算，不讓單一公司、產業或國家決定成敗。</li>
+<li><b>留一塊不怕跌的防禦部位</b>：讓自己在大跌時不必賣股。</li>
+<li><b>照事先寫好的規則調整</b>：不看漲跌臨時決定。</li>
+<li><b>每個結論都標明依據和信心</b>：證據變了就改。</li>
+</ol>
+</section>
+
+<section>
+<h2 id="nea0d14-h2"><span class="no">二</span>財務基礎：先顧好的事</h2>
+<p>投資之前，先確定收入和儲蓄、緊急預備金、短期要用的錢都安排好。</p>
+
+<h3>現階段最重要的是儲蓄和收入（判斷）</h3>
+<pre>投資帳戶 50 萬：報酬率多 1 個百分點 ≈ 每年多 5,000 元
+每月多存 2,000 元 ≈ 每年多 24,000 元
+投資帳戶要到約 240 萬，1 個百分點的報酬才抵得上每月多存 2,000 元</pre>
+<p>資產還不多時，與其花心力挑股票追報酬，不如把力氣放在提高收入和維持儲蓄；這也是不必為了報酬承擔額外風險的原因。</p>
+
+<h3>人力資本：工作類型決定能放多少股票（研究）</h3>
+<p>未來的薪水是多數人最大的資產。如果持股和薪水同向，景氣差時工作和資產會一起受傷，所以應少持有自己產業的股票；一般人也常因熟悉感，過度持有自己公司或產業的股票。<a class="src" href="https://rpc.cfainstitute.org/research/cfa-digest/2013/11/human-capital-and-behavioral-biases-why-investors-dont-diversify-enough-digest-summary">CFA Institute 2013</a></p>
+<p>傳統建議年輕人多放股票，前提是薪水像債券一樣穩定；如果薪水和股市長期一起變動，年輕人的人力資本本身就像股票，應持有少很多的股票。<a class="src" href="https://www.chicagofed.org/publications/working-papers/2007/wp-11">Benzoni 等 2007</a></p>
+<p>做法：在哪個產業工作，就少配那個產業；換工作等收入不穩的期間，現金多留一點。</p>
+
+<h3>防禦部位約 10%（研究＋判斷）</h3>
+<p>巴菲特給家人的安排是 90% 低成本指數基金、10% 短期公債。<a class="src" href="https://www.berkshirehathaway.com/letters/2013ltr.pdf">Berkshire 2013</a> 防禦部位可以用台幣定存，求的是穩定。</p>
+<ol class="points">
+<li><b>代價</b>：定存約 1.6–1.7%，低於股票的長期預期報酬；粗估 10% 放定存，每年少賺約 0.3–0.6 個百分點，換來下跌時的緩衝。</li>
+<li><b>限制</b>：台幣定存防不了台灣本身的風險，這部分要靠降低台股與單一產業比重處理。</li>
+<li><b>分開放</b>：6 個月生活費的緊急預備金另外放活存；大額目標（例如換車）的錢也不混用。</li>
+</ol>
+
+<h3>5 年內要用的錢不放股票（研究）</h3>
+<p>標普 500（1950–2025）：單一年度最差 −37%；任何 5 年期間年化最差約 −2%；10 年期間最差約 −1%；20 年期間沒有虧損過。<a class="src" href="https://am.jpmorgan.com/content/dam/jpm-am-aem/global/en/insights/market-insights/guide-to-the-markets/mi-guide-to-the-markets-us.pdf">J.P. Morgan 2026</a> 緊急預備金、旅費等短期要用的錢放存款；大額目標若在 5 年內，那筆錢要提早移出股市。</p>
+</section>
+
+<section>
+<h2 id="nea0d14-h3"><span class="no">三</span>配置：什麼放多少</h2>
+<p>方向有研究支持；具體比例沒有研究能給出確切數字。</p>
+
+<h3>指數當主力（研究）</h3>
+<p>截至 2025 年底，美國大型股主動基金 20 年內約 93% 輸給指數，15 年約 90%，10 年約 86%。<a class="src" href="https://dev5.ngpf.org/blog/question-of-the-day/question-of-the-day-over-a-recent-20-year-period-what-percent-of-pros-investing-in-large-companies-beat-the-market/">SPIVA／NGPF 2025</a></p>
+
+<h3>個股限量（研究）</h3>
+<p>美股約 4% 的股票創造了所有超越國庫券的淨財富，多數個股長期跑輸國庫券；集中持股容易錯過真正的贏家，分散則幾乎保證買到它們。<a class="src" href="https://wpcarey.asu.edu/sites/default/files/2021-10/do-stocks-outperform-treasury-bills.pdf">Bessembinder</a> 個股要有事先寫好的檢核條件（見第七節）。</p>
+
+<h3>規則範例（規則）</h3>
+<ol class="points">
+<li><b>衛星（個股）不超過 50%</b>。</li>
+<li><b>單一個股不超過 18%</b>：ETF 要穿透計算，例如 0050 裡的台積電要算進台積電的比重。</li>
+<li><b>本國股合計設上限</b>：例如台股不超過 30%。</li>
+<li><b>單一產業穿透設上限</b>：例如半導體不超過 25%，超過 30% 就調整。</li>
+<li><b>加密資產超過 5% 就賣回 3%</b>。</li>
+</ol>
+<p>比例以投資帳戶計算，不含銀行存款。數字是範例，換個合理的人可能訂得不一樣。</p>
+
+<h3>穿透看集中（判斷）</h3>
+<p>單一個股上限是為了限制「一家公司出事」的影響。ETF 如果大部分是同一家公司，豁免就不成立，要拆開來算。0050 成分股中台積電權重約 57.6%（2026/10/30）。<a class="src" href="https://www.moneydj.com/ETF/X/Basic/Basic0007.xdjhtm?etfid=0050.TW">MoneyDJ 2026</a></p>
+<pre>單一公司穿透 ＝ ETF 比重 × 該公司在 ETF 的權重 ＋ 直接持有
+例：0050 占投資帳戶 40%，台積電權重 57.6%
+    40% × 57.6% ≈ 23%，已超過 18%
+不另外直接持有時，0050 上限約 18% ÷ 57.6% ≈ 31%</pre>
+
+<h3>台股別放太多：台灣只占全球約 3%（研究）</h3>
+<p>台灣在 MSCI 全球指數（ACWI）的權重約 3.13%（2026/8 調整後）。<a class="src" href="https://money.udn.com/money/story/5607/9689781">經濟日報 2026</a> 加拿大約占全球股市 3.4%，加拿大人卻把約 52% 的股票放在本國；考量稅、匯率和熟悉度，約 30% 本國、70% 國際是長期波動最低的組合。<a class="src" href="https://www.vanguard.ca/content/dam/intl/americas/canada/en/documents/CHBP_062023_ENG_SECURED.pdf">Vanguard 2023</a> 台股更集中在台積電，所以把 30% 當上限是合理的起點（判斷）。</p>
+
+<h3>國際股照市值持有（研究）</h3>
+<p>Vanguard 2018 年預測未來十年國際股會勝過美股，<a class="src" href="https://www.cnbc.com/2018/11/27/international-stocks-will-beat-us-stocks-over-next-decade-vanguard.html">CNBC 2018</a> 結果截至 2024 年的十年，美股年化 12.5%、國際股 5.1%。<a class="src" href="https://www.etf.com/sections/advisor-center/allan-roth-why-international-stocks-are-suddenly-outperforming">etf.com</a> 連大型機構的方向預測都會錯；用全球指數 ETF（例如 VT）依市值持有即可，不另外押國際股。</p>
+
+<h3>價值股傾斜不保證多賺（研究）</h3>
+<p>大型價值股的溢酬，1963–1991 年平均每月 0.36%，1991–2019 年降到 0.05%，波動大到無法判斷是消失了還是運氣差。<a class="src" href="https://institutionalinvestor.com/article/b1k3pd2z3ptx9g/Ken-French-There-Is-No-Way-to-Tell-If-Value-Premium-Is-Disappearing">Fama &amp; French 2020</a> 如果配置價值股，理由應該是少配科技股、降低和工作的連動，而不是期待它多賺。</p>
+
+<h3>比特幣放多少（研究）</h3>
+<p>比特幣約 1–2% 是合理範圍，超過 2% 會讓組合風險不成比例增加；在股六債四的組合裡，放到 4% 約占整體風險的 14%。<a class="src" href="https://www.blackrock.com/institutions/en-us/insights/thought-leadership/portfolio-design/sizing-bitcoin-in-portfolios">BlackRock 2024</a> BlackRock 有發行比特幣 ETF，有利益衝突，但它反而建議上限 2%，這點比較可信。</p>
+
+<h3>另一個選項：最省事版本（判斷）</h3>
+<p>90% 全球指數 ETF＋10% 台幣定存，照巴菲特的原則把個股慢慢轉成指數。最分散、最不用管，但放棄自己對產業的判斷。</p>
+</section>
+
+<section>
+<h2 id="nea0d14-h4"><span class="no">四</span>AI 與市場：革命還是泡沫</h2>
+
+<h3>技術革命不等於股東賺錢（研究）</h3>
+<p>16 國百年資料顯示，經濟成長快的國家，股票報酬沒有比較高：技術進步的好處多半流向消費者和員工，成長預期常已反映在股價，公司發行新股也會稀釋舊股東。<a class="src" href="https://site.warrington.ufl.edu/ritter/files/2015/04/Economic-growth-and-equity-returns-2005.pdf">Ritter 2005</a> 航空和汽車改變了世界，股東卻沒賺到多少；有持久獨占地位的公司才留住價值。AI 是革命，不代表每檔 AI 股都會賺，這是用指數參與 AI、而不集中押注的理由（推論）。</p>
+
+<h3>泡沫的基本比率（研究）</h3>
+<p>兩年內超越大盤 100% 的美國產業，之後兩年出現 40% 以上崩跌的機率約 53%，一般時期只有約 14%；超越 150% 時，15 個美國案例中有 80% 崩跌。但同一份研究也發現：超越 100% 後兩年的平均報酬跟大盤差不多，股價通常還會再漲一段（平均約 30%）才見頂，想在一年內靠擇時獲利幾乎不可能；美國樣本也只有約 40 個。<a class="src" href="https://www.nber.org/system/files/working_papers/w23191/w23191.pdf">Greenwood 等 2019</a></p>
+<pre>半導體 ETF（SOXX）：2025 年 +40.7%，2026 年到 6/22 再 +108%
+累計約 1.407 × 2.08 − 1 ≈ +193%
+同期標普 500：1.177 × 1.09 − 1 ≈ +28%
+超越大盤約 165 個百分點，已超過研究的門檻
+10/30 收 471.51 美元，距 52 週高點 655.95 美元約 −28%</pre>
+<p>資料：<a class="src" href="https://chartrow.com/quote/soxx/returns">ChartRow SOXX</a> <a class="src" href="https://chartrow.com/sp500/returns">ChartRow S&amp;P 500</a> <a class="src" href="https://stockanalysis.com/stocks/soxx/">Stock Analysis</a> <a class="src" href="https://nasdaq.com/articles/tech-etf-has-more-doubled-2026-it-good-buy-back-half-year">Nasdaq 2026</a></p>
+<p>推論（信心中）：半導體出現更深回檔的機率比平常高很多，但時間點無法預測，平均結果也不是災難。所以做法是設上限、不加碼，而不是全部出場。</p>
+
+<h3>估值高時，降低預期但不擇時（研究）</h3>
+<p>美股席勒本益比約 40 倍（2026/10/30），長期平均約 17 倍；<a class="src" href="https://www.multpl.com/shiller-pe">multpl 2026</a> Vanguard 預測美股未來 10 年年化約 4.8–6.8%（2026/9/30）。<a class="src" href="https://corporate.vanguard.com/content/corporatesite/us/en/corp/vemo/vemo-return-forecasts.html">Vanguard 2026</a> 用估值或趨勢擇時效果很小，最多只能「小小違規」，不值得大幅進出。<a class="src" href="https://www.aqr.com/Insights/Perspectives/Sin-a-Little">AQR 2015</a> 用保守的報酬假設做計畫，財富主要靠儲蓄和收入成長。</p>
+</section>
+
+<section>
+<h2 id="nea0d14-h5"><span class="no">五</span>執行與成本：怎麼調、什麼時候調</h2>
+
+<h3>再平衡是為了控制風險（研究）</h3>
+<p>再平衡的主要目的，是讓風險符合自己的承受度；沒有單一最佳規則，頻率不要太頻繁也不要太少，偏離 5 個百分點是常見的門檻例子。<a class="src" href="https://www.ch.vanguard/en/professional/vanguard-365/when-multi-asset-investors-should-rebalance">Vanguard 2025</a> 限制：研究是用股債組合測的。可以延伸的是道理（漲多的部位比重變大、風險跟著變大）；不能直接搬的是數字，波動較大的單一 ETF 偏離更快，檢查只該更勤（推論）。</p>
+<p>做法：每年 1 月完整檢視；偏離目標 5 個百分點以上，或換工作、買車等重大變化時臨時檢視（門檻是判斷）。</p>
+
+<h3>先用新資金，再考慮賣（判斷）</h3>
+<p>把定期定額導向比重不足的部位，可以不賣就慢慢調整；偏離太大時（例如超出 10 個百分點以上），才搭配賣出。</p>
+
+<h3>分批是為了降低後悔（研究）</h3>
+<p>一次投入約 68% 的時間勝過分三個月投入；分批能降低回檔和後悔，但平均報酬不會比較高。<a class="src" href="https://corporate.vanguard.com/content/dam/corp/research/pdf/cost_averaging_invest_now_or_temporarily_hold_your_cash.pdf">Vanguard 2023</a> 套到賣出（推論）：分批代表多承擔幾個月想降低的風險，所以批次不要拉太長。</p>
+<p>一個可行的規則：預定賣出日比前一個交易日跌超過 3% 就延到隔天，最多延 2 個交易日，第 3 個交易日不管漲跌都賣（可用「限價＝前日收盤 × 0.97」自動執行）。</p>
+
+<h3>費用是最可靠的預測指標（研究）</h3>
+<p>美國股票基金中，費用最低的五分之一成功率約 62%，最高的五分之一只有約 20%。<a class="src" href="https://www.morningstar.com/funds/fund-fees-predict-future-success-or-failure">Morningstar</a> 比較海外 ETF 與台股掛牌的同類 ETF 時，要把內扣費用、股利預扣稅（美國 30%）與換匯成本一起算。</p>
+
+<h3>交易成本與稅（事實）</h3>
+<ol class="points">
+<li>台灣沒有證所稅；賣 ETF 只有約 0.1% 交易稅加手續費。</li>
+<li>複委託持有美國資產，超過 6 萬美元有美國遺產稅風險，也有匯率風險。</li>
+<li>券商手續費常有期間限定優惠，小額交易要留意優惠到期日。</li>
+</ol>
+</section>
+
+<section>
+<h2 id="nea0d14-h6"><span class="no">六</span>行為與心態：管住自己</h2>
+
+<h3>不擇時、少交易（研究）</h3>
+<p>投資人實際報酬平均每年比基金少 1.2 個百分點（約總報酬的 12%），主要來自買賣時機；最波動的一組差距每年 2.1 個百分點，最穩定的一組 0.4 個百分點。<a class="src" href="https://www.morningstar.com/content/cs-assets/v3/assets/blt9415ea4cc4157833/blt852a4301adc2f5db/6a7373d51f7b5ae2da78e1e8/US_Mind_the_Gap_2026.pdf">Morningstar 2026</a> 6.6 萬個美國家庭（1991–96 年）平均年報酬 16.4%、市場 17.9%，交易最頻繁的一組只有 11.4%，主因是過度自信。<a class="src" href="https://ideas.repec.org/a/bla/jfinan/v55y2000i2p773-806.html">Barber &amp; Odean 2000</a> 大跌後高波動通常會持續一陣子（Engle 的波動聚集研究），等幾週不保證比較平靜。</p>
+<p>做法：只在三種情況賣出——比例超過上限、個股檢核條件觸發、需要用錢。不因大跌而賣，不等反彈才賣，不賣了等低點買回。</p>
+
+<h3>少看帳戶，判斷會比較好（研究）</h3>
+<p>人對虧損的痛感比同額獲利強得多，看帳戶越頻繁、看到虧損越多，就越不願意持有股票（短視的損失規避）。<a class="src" href="https://www.nber.org/papers/w4369">Benartzi &amp; Thaler 1995</a> 實驗中最常收到績效回饋的人，承擔的風險最少、賺的錢也最少。<a class="src" href="https://www.casact.org/abstract/effect-myopia-and-loss-aversion-risk-taking-experimental-test">Thaler 等 1997</a> 做法：只看每月報告，關掉股價通知；監控事件（財報、法規），不監控價格。</p>
+
+<h3>情緒檢查三題（判斷）</h3>
+<ol class="points">
+<li><b>等的代價是多少</b>：用數字算。例：一批 3 萬元，再跌 10% 約損失 3,000 元，占總資產多少？</li>
+<li><b>對稱測試</b>：如果是大漲，也會這麼急嗎？不會的話，急迫感多半來自怕虧。</li>
+<li><b>和計畫一不一樣</b>：只是提早照計畫做沒問題；賣得比計畫多、或想等低點買回，就是情緒在決策。</li>
+</ol>
+
+<h3>寫下「大跌時怎麼做」（研究）</h3>
+<p>個人投資政策聲明最大的好處，是在市場混亂、容易情緒化的時候，提供一套事先想好的客觀做法。<a class="src" href="https://rpc.cfainstitute.org/-/media/documents/article/position-paper/investment-policy-statement-individual-investors.pdf">CFA Institute 2010</a> 大跌 SOP 範例（判斷）：投資帳戶從高點跌 20–30% 以上時，不賣；定期定額照扣；不動用緊急預備金和定存去加碼；只看月報的比例，偏離目標超過 5 個百分點才調整。</p>
+</section>
+
+<section>
+<h2 id="nea0d14-h7"><span class="no">七</span>個股：怎麼判斷要不要留</h2>
+
+<h3>事先寫好檢核條件（判斷）</h3>
+<p>財報出來照條件判斷，不看心情，股價當天的反應不算。以雲端業者為例，以某一季官方數字為基準，追蹤搜尋或核心業務成長、自由現金流（單季與近四季）、雲端營收、資本支出：</p>
+<ol class="points">
+<li><b>兩到三項惡化</b>：分批賣出，轉進指數 ETF。</li>
+<li><b>好壞參半</b>：持有，不加碼。</li>
+<li><b>改善</b>：持有。</li>
+</ol>
+<p>期間不攤平；賣出的錢轉進指數，不換成另一檔同主題的股票。</p>
+
+<h3>估值自己算（判斷）</h3>
+<pre>核心本益比 ＝ 股價 ÷ 核心 EPS
+核心 EPS ＝ 營業利益 × (1 − 稅率) ÷ 稀釋後股數</pre>
+<p>同時看近四季和最新一季年化，扣掉一次性損益（例如持股評價利得）。分級只看倍數：約 20 倍較低、25–28 倍中等、30 倍以上較高；沒有考慮成長速度，成長快的公司倍數高不一定貴。</p>
+
+<h3>小心半真半假的數字（研究）</h3>
+<p>同一組數據換個角度，結論可能相反。例：Alphabet 2026 年第三季單季自由現金流為負，但近四季仍為正；<a class="src" href="https://s206.q4cdn.com/479360582/files/doc_financials/2026/q3/2026q3-alphabet-earnings-release.pdf">Alphabet 2026</a> Amazon 的帳面本益比被投資利得美化，扣掉後的核心本益比明顯較高。<a class="src" href="https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx">Amazon 2026</a></p>
+
+<h3>新股上市不追（研究）</h3>
+<p>1980–2024 年美國 IPO：上市前營收低於 1 億美元的公司，上市後 3 年平均落後大盤約 34%；股價營收比超過 40 倍的公司，3 年落後大盤約 15%；成功公司大部分的漲幅發生在上市之後，不必搶在首日買。<a class="src" href="https://www.schwab.com/learn/story/are-initial-public-offerings-ipos-worth-it">Schwab 2026</a> 例如 2026 年 11 月預計上市的 Anthropic，Damodaran 估值略低於價格區間，價格明顯偏高就不參與。<a class="src" href="https://aswathdamodaran.blogspot.com/2026/10/the-anthropic-prospectus-arrives-ipo.html">Damodaran 2026</a>（整理者註：本手冊由 Claude 協助整理，Claude 由 Anthropic 開發，此處只談一般原則，不對這檔股票給買賣建議。）</p>
+</section>
+
+<section>
+<h2 id="nea0d14-h8"><span class="no">八</span>專家觀點：怎麼看</h2>
+<h3>五個標準（判斷）</h3>
+<ol class="points">
+<li><b>用錢還是用嘴</b>：實際下注比發表看法可信。</li>
+<li><b>原則還是預測</b>：原則耐用，預測容易錯。</li>
+<li><b>長期紀錄</b>：過去說對的比例。</li>
+<li><b>利益衝突</b>：是否在推銷自家產品或課程。</li>
+<li><b>是否永遠同一論調</b>：永遠看空的人，看空時資訊較少。</li>
+</ol>
+<p>只採用參考價值中以上的觀點；多個獨立來源一致的結論權重較高。</p>
+<h3>分級範例</h3>
+<ol class="points">
+<li><b>高</b>：巴菲特／波克夏（看實際行動）、霍華・馬克斯、Damodaran、IMF、挪威主權基金、Fed 實際決議、市場原始數據；Vanguard 的流程研究（再平衡、分批、成本）。</li>
+<li><b>中</b>：Vanguard 的市場預測、GMO、BlackRock、Goldman、經濟學人。</li>
+<li><b>低（不採用）</b>：媒體引述的短期策略師看法、Dalio 的市場預測（但他的台海情境仍值得參考）。</li>
+</ol>
+<h3>時效與原文</h3>
+<p>市場數據看最近一個月；財報看最近一季；央行看最近一次會議；經濟學人市場話題約看近 4 期、總體經濟約 12 期；定期展望以最新版為準；超過約 6 個月的具體預測不採用；投資原則不過期。盡量核對當事人或機構的原始資料（致股東信、備忘錄、官方報告、持股申報），找不到原文的轉述就排除，並注意脈絡。</p>
+</section>
+
+<section>
+<h2 id="nea0d14-h9"><span class="no">九</span>資訊查證：怎麼確保可信</h2>
+<p>依據美國情報分析標準 ICD 203、Tetlock 的超級預測研究、SIFT 查證法與 Sagan 的「胡扯偵測工具」。</p>
+<ol class="points">
+<li><b>來源</b>：用最新的資料，用舊資料要說明原因；只用可信來源；不熟的來源先查別人怎麼評價它；關鍵數字用兩個獨立來源交叉核對；做不到的核實要註明原因。</li>
+<li><b>呈現</b>：標明事實、推論、判斷；重要結論給信心程度，並說明什麼證據會改變它；從原始數據出發、列出算法；證據薄弱時說明不確定，但仍給最佳判斷，不捏造。</li>
+<li><b>偏誤檢查</b>：從基本比率出發；主動找反證；考慮多種解釋，不偏袒自己先前的提案；注意倖存者偏差、小樣本、相關不等於因果、半真半假；有新證據就更新。</li>
+<li><b>原則要有外部依據</b>：人工整理的技能讓模型表現提升約 16 個百分點，模型自己產生的反而略降，而且精簡的比冗長的有效。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
+</ol>
+</section>
+
+<section>
+<h2 id="nea0d14-h10"><span class="no">十</span>常見的判斷錯誤</h2>
+<p>回顧錯誤，是校準判斷最直接的方法。整理過程中修正過的幾種錯誤：</p>
+<ol class="points">
+<li><b>只算投資帳戶</b>：忽略銀行定存，誤判「沒有防禦部位」。配置要看全部資產。</li>
+<li><b>把機構預測當買進理由</b>：例如用 Vanguard 的國際股預測支持加碼，但它 2018 年的預測錯得很大；改成照市值持有。</li>
+<li><b>把門檻例子說成建議</b>：Vanguard 只把偏離 5 個百分點當例子，並沒有指定單一最佳規則。</li>
+<li><b>半真半假的數字</b>：只講單季自由現金流為負，不講近四季仍為正。</li>
+<li><b>引用脫離脈絡</b>：IMF 說的「曝險集中」指金融體系，不是個人；挪威主權基金的債券比例是財政部規定的長期基準，不是市場判斷。</li>
+<li><b>把美元債券的預期報酬套到台幣定存</b>：兩者不同；防禦部位應視為「有成本的保險」。</li>
+</ol>
+</section>
+
+<section>
+<h2 id="nea0d14-h11"><span class="no">十一</span>這套方法的限制</h2>
+<ol class="points">
+<li><b>比例是判斷，不是答案</b>：研究只支持方向，25%、30%、10% 這些數字，換個合理的人可能訂得不一樣。</li>
+<li><b>研究多來自美國市場</b>：SPIVA、Vanguard、Morningstar 都以美國資料為主，套到台股是延伸。</li>
+<li><b>會讓結論改變的事</b>：工作產業改變、ETF 成分權重大幅變化、財務目標改變（例如大額支出時程確定）。</li>
+</ol>
+</section>
+
+</article>
+  </div>
+</div>
+<button class="menu-btn" id="menu" type="button" aria-label="目錄">☰</button>
+<script>
+(function(){
+  "use strict";
+  var KEY="invest.last", TKEY="notes.theme";
+  function get(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function set(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  var days=[].slice.call(document.querySelectorAll(".day"));
+  var items=[].slice.call(document.querySelectorAll("#nav li[data-day]"));
+  var side=document.getElementById("side"), prev=document.getElementById("prev"),
+      next=document.getElementById("next"), bar=document.getElementById("bar"), cur=-1;
+  if(!days.length)return;
+
+  document.getElementById("theme").onclick=function(){
+    var d=document.documentElement, now=d.getAttribute("data-theme");
+    if(!now)now=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+    var nx=now==="dark"?"light":"dark"; d.setAttribute("data-theme",nx); set(TKEY,nx);
+  };
+
+  function paint(){
+    var h=document.documentElement.scrollHeight-innerHeight;
+    bar.style.width=(h>0?Math.min(100,scrollY/h*100):100)+"%";
+  }
+  function show(i,anchor){
+    days.forEach(function(d,j){d.hidden=j!==i;});
+    items.forEach(function(li,j){li.classList.toggle("active",j===i);});
+    cur=i; set(KEY,days[i].id);
+    document.getElementById("pos").textContent="第 "+(i+1)+" / "+days.length+" 篇";
+    prev.disabled=i===0; next.disabled=i===days.length-1;
+    document.title=days[i].getAttribute("data-title")+" · 投資筆記";
+    var el=anchor&&document.getElementById(anchor);
+    if(el)el.scrollIntoView(); else window.scrollTo(0,0);
+    paint();
+  }
+  function route(){
+    var h=decodeURIComponent(location.hash.slice(1)), el=h&&document.getElementById(h);
+    var d=el&&el.closest(".day");
+    if(d){show(days.indexOf(d),d.id===h?null:h);return;}
+    var k=days.map(function(x){return x.id;}).indexOf(get(KEY));
+    show(k<0?0:k);
+  }
+  function go(id){side.classList.remove("open");
+    if(location.hash==="#"+id)route(); else location.hash=id;}
+
+  document.querySelectorAll(".nav-day").forEach(function(b){
+    b.onclick=function(){go(b.getAttribute("data-go"));};});
+  document.querySelectorAll(".nav-sub a").forEach(function(a){
+    a.addEventListener("click",function(){side.classList.remove("open");});});
+  prev.onclick=function(){if(cur>0)go(days[cur-1].id);};
+  next.onclick=function(){if(cur<days.length-1)go(days[cur+1].id);};
+  document.getElementById("menu").onclick=function(){side.classList.toggle("open");};
+  document.getElementById("main").addEventListener("click",function(){side.classList.remove("open");});
+
+  // 搜尋：比對整篇內文，隱藏不符合的筆記與空分類
+  document.getElementById("q").addEventListener("input",function(){
+    var q=this.value.trim().toLowerCase();
+    items.forEach(function(li,j){
+      li.classList.toggle("hide",!!q&&days[j].textContent.toLowerCase().indexOf(q)<0);});
+    document.querySelectorAll(".nav-group").forEach(function(g){
+      var n=g.nextElementSibling, any=false;
+      while(n&&!n.classList.contains("nav-group")){if(!n.classList.contains("hide"))any=true;n=n.nextElementSibling;}
+      g.classList.toggle("hide",!any);});
+  });
+
+  window.addEventListener("hashchange",route);
+  window.addEventListener("scroll",paint,{passive:true});
+  route();
+})();
+</script>
+<a id="econ-back" href="../index.html">← 雜誌目錄</a></body></html>

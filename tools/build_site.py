@@ -12,7 +12,7 @@ build_site.py — 從 2026/繁中版/*.html 產生可上傳 GitHub Pages 的靜�
   web/index.html          目錄首頁（封面卡牌牆）
   web/issues/2026-01-03.html ...  各期複本（英數檔名）
   web/covers/2026-01-03.jpg ...   各期封面縮圖（從 HTML 內嵌圖抽出）
-  web/notes/index.html    個人筆記目錄（來源：web/notes_src/<分類>/*.html）
+  web/notes/、web/invest/ 筆記類分頁（來源：web/notes_src/<分類>/*.html，分類對應見 NOTE_PAGES）
   web/.nojekyll           避免 GitHub Pages 用 Jekyll 處理
 
 原始檔（2026/繁中版、notes_src/）完全不會被修改。
@@ -46,11 +46,15 @@ EXTRA_PAGES = [
             if len(ROOT.parents) > 2 else None},
 ]
 
-# 個人筆記分頁：notes_src/<分類資料夾>/*.html → web/notes/index.html。
+# 筆記類分頁：notes_src/<分類資料夾>/*.html → web/<slug>/index.html。
+# 分類依 NOTE_PAGES 分到不同分頁；groups=None 的分頁收「其他分頁沒有認領的分類」。
 # 新增筆記只要把自包含 HTML 丟進分類資料夾再重跑本腳本（規格見 repo 的 CLAUDE.md）。
+# 新增分頁時，.github/workflows/notes.yml 的 git add 也要加上新的 slug。
 NOTES_SRC = OUT / "notes_src"
-NOTES = OUT / "notes"
-NOTES_LABEL = "筆記"
+NOTE_PAGES = [
+    {"slug": "notes", "label": "筆記", "title": "個人筆記", "desc": "研究整理", "groups": None},
+    {"slug": "invest", "label": "投資", "title": "投資筆記", "desc": "投資原則與研究", "groups": {"投資"}},
+]
 NOTE_DATE_RE = re.compile(r"(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日")
 
 DATE_RE = re.compile(r"(\d{4})年(\d{1,2})月(\d{1,2})日")
@@ -150,8 +154,9 @@ def inject_mobile(text: str, slug: str) -> str:
 def tabs_html(active: str, prefix: str) -> str:
     """分頁列。active 為目前頁的 slug（"" = 雜誌首頁）；prefix 為到站根的相對路徑。"""
     pages = [("", "雜誌")] + [(p["slug"], p["label"]) for p in EXTRA_PAGES]
-    if NOTES_SRC.exists() or (NOTES / "index.html").exists():
-        pages.append(("notes", NOTES_LABEL))
+    for p in NOTE_PAGES:
+        if (OUT / p["slug"] / "index.html").exists():
+            pages.append((p["slug"], p["label"]))
     tabs = []
     for slug, label in pages:
         href = f"{prefix}{slug}/" if slug else (prefix or "./")
@@ -160,17 +165,31 @@ def tabs_html(active: str, prefix: str) -> str:
     return f'<nav class="tabs">{"".join(tabs)}</nav>'
 
 
+def note_groups(page):
+    """這個分頁收哪些分類資料夾。"""
+    groups = sorted(d for d in NOTES_SRC.iterdir() if d.is_dir())
+    if page["groups"] is not None:
+        return [g for g in groups if g.name in page["groups"]]
+    claimed = set().union(*(p["groups"] for p in NOTE_PAGES if p["groups"]))
+    return [g for g in groups if g.name not in claimed]
+
+
 def build_notes():
-    """notes_src/<分類>/*.html → web/notes/index.html：仿「AI 教材」的側欄＋單篇閱讀版面。"""
+    """notes_src/<分類>/*.html → 各筆記類分頁（NOTE_PAGES）。"""
     if not NOTES_SRC.exists():
-        if (NOTES / "index.html").exists():
-            print(f"筆記來源不存在，沿用現有：{NOTES}")
+        print("筆記來源不存在，沿用現有分頁")
         return
-    if NOTES.exists():
-        shutil.rmtree(NOTES)        # 整個重建，來源刪掉的筆記網站上也會消失
-    NOTES.mkdir(parents=True)
+    for page in NOTE_PAGES:
+        build_note_page(page)
+
+
+def build_note_page(page):
+    """一個筆記類分頁：仿「AI 教材」的側欄＋單篇閱讀版面。"""
+    out = OUT / page["slug"]
+    if out.exists():
+        shutil.rmtree(out)          # 整個重建，來源刪掉的筆記網站上也會消失
     nav, days, n = [], [], 0
-    for group in sorted(d for d in NOTES_SRC.iterdir() if d.is_dir()):
+    for group in note_groups(page):
         files = sorted(group.glob("*.html"))
         if not files:
             continue
@@ -209,12 +228,19 @@ def build_notes():
             days.append(f'<article class="day" id="{nid}" data-title="{escape(title)}" hidden>'
                         f'{body}</article>')
             n += 1
-    page = (NOTES_TMPL.replace("%%NAV%%", "".join(nav))
-                      .replace("%%DAYS%%", "\n".join(days))
-                      .replace("%%COUNT%%", str(n))
-                      .replace("%%PWA%%", pwa_head("../")))
-    (NOTES / "index.html").write_text(inject_extra_back(page), encoding="utf-8")
-    print(f"筆記：{n} 篇 -> {NOTES / 'index.html'}")
+    if not n:
+        print(f"{page['label']}：0 篇，不產生分頁")
+        return
+    out.mkdir(parents=True)
+    doc = (NOTES_TMPL.replace("%%NAV%%", "".join(nav))
+                     .replace("%%DAYS%%", "\n".join(days))
+                     .replace("%%COUNT%%", str(n))
+                     .replace("%%TITLE%%", page["title"])
+                     .replace("%%DESC%%", page["desc"])
+                     .replace("%%KEY%%", page["slug"])
+                     .replace("%%PWA%%", pwa_head("../")))
+    (out / "index.html").write_text(inject_extra_back(doc), encoding="utf-8")
+    print(f"{page['label']}：{n} 篇 -> {out / 'index.html'}")
 
 
 MONTHS_ZH =["", "1 月", "2 月", "3 月", "4 月", "5 月", "6 月",
@@ -455,7 +481,7 @@ NOTES_TMPL = r"""<!DOCTYPE html>
 <html lang="zh-Hant"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 %%PWA%%
-<title>個人筆記</title>
+<title>%%TITLE%%</title>
 <script>try{var t=localStorage.getItem("notes.theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <style>
 :root{
@@ -605,8 +631,8 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-si
 <div class="wrap">
   <aside class="side" id="side">
     <div class="brand">
-      <h2>個人筆記</h2>
-      <p>研究整理・共 %%COUNT%% 篇<br><a href="../index.html">← 回雜誌目錄</a></p>
+      <h2>%%TITLE%%</h2>
+      <p>%%DESC%%・共 %%COUNT%% 篇<br><a href="../index.html">← 回雜誌目錄</a></p>
     </div>
     <div class="tools">
       <input id="q" type="search" placeholder="搜尋筆記…" autocomplete="off">
@@ -626,7 +652,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-si
 <script>
 (function(){
   "use strict";
-  var KEY="notes.last", TKEY="notes.theme";
+  var KEY="%%KEY%%.last", TKEY="notes.theme";
   function get(k){try{return localStorage.getItem(k);}catch(e){return null;}}
   function set(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   var days=[].slice.call(document.querySelectorAll(".day"));
@@ -651,7 +677,7 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-si
     cur=i; set(KEY,days[i].id);
     document.getElementById("pos").textContent="第 "+(i+1)+" / "+days.length+" 篇";
     prev.disabled=i===0; next.disabled=i===days.length-1;
-    document.title=days[i].getAttribute("data-title")+" · 個人筆記";
+    document.title=days[i].getAttribute("data-title")+" · %%TITLE%%";
     var el=anchor&&document.getElementById(anchor);
     if(el)el.scrollIntoView(); else window.scrollTo(0,0);
     paint();

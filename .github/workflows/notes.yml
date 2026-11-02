@@ -48,7 +48,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add -A notes_src notes
+          # 筆記類分頁（build_site.py 的 NOTE_PAGES）；不存在也未追蹤的路徑略過
+          git add -A -- notes_src $(for p in notes invest; do [ -e "$p" ] || git ls-files --error-unmatch "$p" >/dev/null 2>&1 && echo "$p"; done)
           if git diff --cached --quiet; then
             echo "沒有需要發佈的變更"
           else
