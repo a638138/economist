@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 頂尖會議研究：2026 年正式發表論文整理</title>
+</head>
+<body>
+<main>
+
+<h1>AI Agent 頂尖會議研究：2026 年正式發表論文整理</h1>
+<div class="meta">整理日期：2026 年 11 月 2 日 · 9 篇參考文獻 · 只收已被 ICSE、ASE、MSR、ICML、ACL、NeurIPS 正式接受的論文（另 1 篇預印本已標明）· 6 篇主要論文已讀全文</div>
+
+<div class="lede">一句話總結：<b>正式發表的研究和先前預印本的方向一致，但讀完全文後，證據比摘要寫的弱</b>。多數只跑一次、沒有統計檢定，有的用模擬使用者或小型題目。方向上仍支持：每次修改後重跑測試、限制 agent 回合數、一開始講清楚目標，平行程式靠「正確性檢查加 profiling」的迴路。</div>
+
+<div class="note"><b>讀完全文後的整體評估</b>：6 篇主要論文中，只有 MSR 那篇對部分比較做了統計檢定；ICSE 那篇每種設定只跑一次、100 題；ASE 那篇是單一函式的 Python 小題，且用評分用的測試來做修正；ICML 的 ToM-SWE 用 LLM 模擬使用者。所以這些數字適合看方向，不適合直接套用幅度。「對你的意義」與第八節是整理者的判斷，不是論文內容。</div>
+
+<div class="part">第一部分　省 token 與長對話</div>
+
+<section>
+<h2><span class="no">一</span>限制回合數能省錢，但會少解幾題</h2>
+<ol class="points">
+<li><b>實驗規模</b>：SWE-bench Verified 隨機抽 100 題，Claude 4 Sonnet、Gemini 2.5 Pro、GPT 4.1 三個模型，每種設定只跑一次，沒有統計檢定，也關掉了 prompt 快取。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+<li><b>上限設在第 75 百分位</b>：成本降 23.6%（Claude）、38.4%（GPT 4.1）、68.3%（Gemini）；解題數分別少 4 題、少 5 題、多 2 題。作者稱為「影響很小」，但 100 題裡少 4～5 題是否算小，要看你的需求。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+<li><b>上限設得太低就明顯變差</b>：設在第 25 百分位時，Gemini 從 63 題掉到 26 題。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+<li><b>需要時才追加回合</b>：和同等級的固定上限相比，成本再降約 6%～24%，解題數差距在正負 1～3 題之間。論文摘要寫「12%～24%」，與論文表格不符。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+<li><b>方法上的疑慮</b>：百分位是用同一批 100 題算出來的，沒有另外一組題目驗證。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>先記下 agent 平常完成一類任務大約要幾個回合，跑到明顯超過時就中斷並重新說明。上限不要設太緊，否則會少解很多題。</p>
+</section>
+
+<section>
+<h2><span class="no">二</span>多輪修改會把原本對的東西改壞</h2>
+<ol class="points">
+<li><b>實驗規模</b>：542 題單一函式的 Python 題目（HumanEval+、MBPP+），6 個模型，每題接 8 輪固定的修改要求（加錯誤處理、加快取、改成類別、優化演算法等），是人工設計的模板，不是真實對話。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
+<li><b>改越多輪，原有測試通過率越低</b>：第 8 輪時 GPT-4o 從 90.2% 降到 72.4%，Llama-3.1-8B 從 76.1% 降到 31.6%。曾經弄壞原有功能的任務比例，DeepSeek-V3 是 43.2%、Llama-3.1-8B 是 72.9%（只有這兩個模型有算）。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
+<li><b>每輪重跑測試、退步就退回重做</b>：DeepSeek-V3 第 8 輪通過率從 75.8% 提升到 87.9%，弄壞功能的任務從 43.2% 降到 12.5%；Llama-3.1-8B 從 31.6% 提升到 47.3%。只測了這兩個模型。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
+<li><b>重要限制</b>：修正時用的測試，就是最後評分用的那批測試，等於提前知道答案；實務上只有在你的測試夠完整時，才會有類似效果。沒有統計檢定。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>這個做法的效果取決於你的回歸測試有多完整。讓 agent 每次改完都跑完整測試仍然值得，但要先投資把測試寫好。</p>
+</section>
+
+<div class="part">第二部分　怎麼使用 agent</div>
+
+<section>
+<h2><span class="no">三</span>把意圖交代清楚，效果差很多</h2>
+<ol class="points">
+<li><b>做法</b>：主 agent 旁邊加一個輔助 agent，專門推測使用者的目標、限制和偏好，並記住使用者過去的互動。<a class="src" href="https://arxiv.org/abs/2510.21903">Zhou 等 2026</a></li>
+<li><b>模擬測試的結果</b>：500 題 SWE-bench 題目、15 種開發者風格，使用者由 GPT-5 模擬。用 Claude Sonnet 4 時成功率從 18.1% 提升到 59.7%（論文前言另寫 13.5% 與 57.4%，前後不一）；在需求模糊的 SWE-bench 上從 51.9% 提升到 63.4%。<a class="src" href="https://arxiv.org/abs/2510.21903">Zhou 等 2026</a></li>
+<li><b>真人使用</b>：17 位專業開發者用了三週、209 個工作階段，174 個建議中 74.1% 直接被採用、12.1% 稍改後採用；沒有對照組，作者不主張因果關係。<a class="src" href="https://arxiv.org/abs/2510.21903">Zhou 等 2026</a></li>
+<li><b>成本</b>：每個工作階段多花約 0.17 美元，約增加 16%。<a class="src" href="https://arxiv.org/abs/2510.21903">Zhou 等 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>任務開頭就寫清楚目標、限制、偏好，常用的偏好放進 CLAUDE.md。論文測的是自動推測意圖的系統，沒有單獨測「使用者主動說明」，這是推論。</p>
+</section>
+
+<section>
+<h2><span class="no">四</span>真實的多檔案工作仍然很難</h2>
+<ol class="points">
+<li><b>成績</b>：SWE-Bench Pro 公開題目（731 題、11 個 repo）最好的是 Claude Sonnet 4.5 的 43.6%；企業內部題目（276 題、18 個 repo）最好的是 Claude Opus 4.1 的 17.8%。論文結論拿來對照的是「SWE-bench Verified 上常見的 70% 以上」，但沒有附同一批模型的對照表。<a class="src" href="https://arxiv.org/abs/2509.16941">Deng 等 2026</a></li>
+<li><b>題目規模</b>：參考解答平均改 4.1 個檔案、107.4 行，每題至少 10 行；相比之下，SWE-bench Verified 有 161/500 題只要改 1～2 行。<a class="src" href="https://arxiv.org/abs/2509.16941">Deng 等 2026</a></li>
+<li><b>失敗原因因模型而異</b>：Claude Sonnet 4 的失敗中，35.6% 是 context 爆掉、17.0% 是不停讀檔；Claude Opus 4.1 的失敗中，35.9% 是解法錯誤。<a class="src" href="https://arxiv.org/abs/2509.16941">Deng 等 2026</a></li>
+<li><b>和你相關的限制</b>：作者指出 C++、Java、Rust 的題目偏少。<a class="src" href="https://arxiv.org/abs/2509.16941">Deng 等 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>跨多個模組的修改，先拆成幾個小任務，並直接告訴 agent 要看哪些檔案，避免它把 context 耗在讀檔上。</p>
+</section>
+
+<section>
+<h2><span class="no">五</span>審查習慣決定品質</h2>
+<ol class="points">
+<li><b>資料</b>：GitHub 上至少 100 顆星的專案中，Claude Code、Cursor、Copilot、Codex 送出的 9,427 個已結案 PR，其中 6,819 個被接受。<a class="src" href="https://arxiv.org/abs/2601.20106">Cynthia 等 2026</a></li>
+<li><b>多數被接受的 PR 沒經修改</b>：被接受的 PR 中，外圍貢獻者有 76.5%、核心開發者約 72% 沒經修改（論文寫的 74.1% 是兩組比例的平均，不是全部 PR 合計）。<a class="src" href="https://arxiv.org/abs/2601.20106">Cynthia 等 2026</a></li>
+<li><b>核心開發者審得比較仔細</b>：每個 PR 的審查留言中位數 3.6 則，外圍貢獻者 2.0 則（有統計檢定，效果量小）。<a class="src" href="https://arxiv.org/abs/2601.20106">Cynthia 等 2026</a></li>
+<li><b>沒跑 CI 就合併</b>：外圍貢獻者 19.1%、核心開發者 11.2%；這項比較沒有統計檢定。<a class="src" href="https://arxiv.org/abs/2601.20106">Cynthia 等 2026</a></li>
+</ol>
+</section>
+
+<div class="part">第三部分　平行程式</div>
+
+<section>
+<h2><span class="no">六</span>正確性檢查加 profiling，能穩定產出更快的平行程式</h2>
+<ol class="points">
+<li><b>做法</b>：把 Codex agent（gpt-5.1-codex-mini）改成「找熱點 → 規劃資料搬移 → 正確性檢查 → 依 profiling 結果修改」的流程，把循序程式轉成 OpenMP GPU offload；效能退步超過 10% 的修改會自動退回。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>比較對象</b>：「參考實作」是各 benchmark 自己附的 OpenMP GPU offload 版本，不是循序程式。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>結果</b>：36 個 kernel 中排除 5 個後，31 個全部正確，27 個比參考實作快或持平。HeCBench 幾何平均加速 3.1 倍（A100）與 3.6 倍（RTX 4060），Rodinia 為 1.5 倍與 1.1 倍；NAS 在 A100 上的 2.95 倍主要來自單一 kernel 的 29.7 倍，中位數只有 1.00 倍。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>和不加流程的 Codex 比較</b>：同一模型直接翻譯，HeCBench 為 2.0 倍與 2.4 倍，Rodinia 只有 0.30 倍（變慢），NAS 1.03 倍，且有 kernel 失敗。加了流程後 token 只多約 11%。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>agent 會偷懶</b>：被排除的 5 個中，有 2 個是 agent 把主要運算留在 CPU 上、沒有真正搬到 GPU。作者建議在流程中強制檢查運算確實在 GPU 上執行。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>限制</b>：沒有拆開測 profiling、資料規劃、正確性檢查各自的貢獻；只測單一 GPU。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>agent 的效能修改常缺數據</b>（預印本，只讀摘要）：agent 的效能優化 PR 合併率 54.4%，人寫的是 73.3%；兩者都約有一半沒附量化的效能數字。<a class="src" href="https://arxiv.org/abs/2610.03969">Peng 等 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>這支持「AI Agent 開發效率」筆記的結論：效能調校要靠你搭好的迴路。除了參考答案、量測腳本和 profiler，還要明確檢查「運算真的在目標硬體上跑」，並要求每次修改附上前後數字。</p>
+</section>
+
+<div class="part">第四部分　skill 與說明檔</div>
+
+<section>
+<h2><span class="no">七</span>正式會議的證據仍然很少</h2>
+<ol class="points">
+<li><b>正式發表的只有兩篇</b>：skill 效益基準 SkillsBench（NeurIPS 2026），以及 skill 憑證外洩研究（ASE 2026）。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a><a class="src" href="https://arxiv.org/abs/2604.03070">Chen 等 2026</a></li>
+<li><b>說明檔的效果研究只在 workshop</b>：例如 Evaluating AGENTS.md 發表在 ICLR 2026 workshop。skill 和說明檔「怎麼寫」的結論，目前大多仍建立在預印本上。</li>
+</ol>
+</section>
+
+<section>
+<h2><span class="no">八</span>整理成做法</h2>
+<p>以下是整理者依上述研究提出的做法，效果仍要在自己的專案上驗證。</p>
+<ol class="points">
+<li><b>先把回歸測試寫好</b>，再讓 agent 每次改完都跑完整測試，失敗就退回重做。</li>
+<li><b>記下常見任務大約要幾個回合</b>，明顯超過就中斷重新說明；上限不要設太緊。</li>
+<li><b>任務開頭交代目標、限制、偏好</b>，常用的寫進 CLAUDE.md。</li>
+<li><b>跨模組的修改拆成小任務</b>，並直接指定要看的檔案。</li>
+<li><b>平行程式與效能修改</b>：先有參考答案與量測腳本，檢查運算確實在目標硬體上，用 profiler 結果引導修改，並要求附前後數字。</li>
+<li><b>合併前一定跑 CI 並親自審查</b>。</li>
+</ol>
+</section>
+
+<section>
+<h2>參考文獻</h2>
+<div class="note"><b>發表狀態與閱讀層級</b>：2026 年 11 月 2 日依會議官網、論文目錄與論文全文查核。「讀過全文」指已對照論文內文與表格核對數字；「只讀摘要」指數字只取自摘要。</div>
+<ol class="points">
+<li><a href="https://arxiv.org/abs/2510.16786">More with Less: An Empirical Study of Turn-Control Strategies for Efficient Coding Agents</a>，Gao、Peng，ByteDance，ICSE 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2607.01855">Regression Accumulation in Multi-turn LLM Programming Conversations</a>，Huang 等，ASE 2026（正式發表，讀過全文；論文全文未註明會議，發表狀態依 <a href="https://www.conference-publishing.com/toc/ASE26&amp;Full=abs">ASE 2026 論文目錄</a>）</li>
+<li><a href="https://arxiv.org/abs/2510.21903">TOM-SWE: User Mental Modeling For Software Engineering Agents</a>，Zhou 等，ICML 2026（正式發表，讀過全文；<a href="https://icml.cc/virtual/2026/poster/65025">ICML 頁面</a>）</li>
+<li><a href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?</a>，Deng 等，ICML 2026（正式發表，讀過全文；<a href="https://icml.cc/virtual/2026/poster/61047">ICML 頁面</a>）</li>
+<li><a href="https://arxiv.org/abs/2601.20106">Are We All Using Agents the Same Way? An Empirical Study of Core and Peripheral Developers' Use of Coding Agents</a>，Cynthia 等，MSR 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2601.04327">ParaCodex: A Profiling-Guided Autonomous Coding Agent for Reliable Parallel Code Generation and Translation</a>，Kaplan 等，ACL 2026（正式發表，讀過全文；<a href="https://aclanthology.org/2026.acl-long.732/">ACL 頁面</a>）</li>
+<li><a href="https://arxiv.org/abs/2602.12670">SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks</a>，Li 等，NeurIPS 2026（正式發表，只讀摘要）</li>
+<li><a href="https://arxiv.org/abs/2604.03070">How Your Credentials Are Leaked by LLM Agent Skills: An Empirical Study</a>，Chen 等，ASE 2026（正式發表，只讀摘要）</li>
+<li><a href="https://arxiv.org/abs/2610.03969">How Do Coding Agents Optimize Software and Report Performance Validation?</a>，Peng 等，arXiv 2026 年 10 月（預印本，只讀摘要）</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>
