@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 研究（五）：做法總結與查核紀錄</title>
+</head>
+<body>
+<main>
+
+<h1>AI Agent 研究（五）：做法總結與查核紀錄</h1>
+<div class="meta">整理日期：2026 年 11 月 2 日 · 依前四篇研究整理 · 全文查核版</div>
+
+<div class="lede">一句話總結：<b>agent 的效益取決於你搭的迴路</b>。這篇把前四篇整理成可執行的做法，並記錄這次全文查核更正了什麼、刪除了哪些研究與原因。</div>
+
+<div class="note"><b>收錄門檻</b>：每篇論文都讀過全文，對照內文與表格核對數字，並檢查樣本數、重複次數、統計檢定與作者自述的限制；方法沒有重大問題才收錄，預印本照收但標明。句尾標籤是出處；「對你的意義」是整理者的判斷，不是論文結論。刪除的研究與原因見「AI Agent 研究（五）」。</div>
+
+<section>
+<h2><span class="no">一</span>整理成做法</h2>
+<p>以下是整理者依前四篇研究提出的做法，效果仍要在自己的專案上驗證。</p>
+<ol class="points">
+<li><b>先準備驗證工具</b>：回歸測試、參考輸出、量測腳本、profiler 指令都先備好，再讓 agent 動手；每次修改都跑完整測試，退步就退回。</li>
+<li><b>CLAUDE.md 精簡</b>：只寫建置與測試指令、硬體與即時限制、不可違反的規則；不要自動產生後直接留用。</li>
+<li><b>skill 少而精</b>：只為反覆出現、agent 查不到的流程寫 skill；關鍵警告放最前面，註明版本，驗證寫一次；新增後用真實任務比較有無 skill。</li>
+<li><b>任務要小、範圍要明</b>：開頭交代目標、限制與要看的檔案；跨模組的修改拆成小任務；一個任務一個對話。</li>
+<li><b>盯著執行過程</b>：反覆讀同一檔案或改了又改就中斷；明顯超過平常回合數就重新說明。</li>
+<li><b>effort 用預設</b>：日常用 medium，修既有程式的 bug 開 high，max 只在測過確實有效時用。</li>
+<li><b>單一 agent 優先</b>：子 agent 只用在可以完全切開的工作。</li>
+<li><b>效能修改要附數字</b>：要求修改前後的量測結果，並檢查運算在目標硬體上、同步正確。</li>
+<li><b>安全</b>：不裝來路不明的 skill；新增相依套件先確認存在；合併前跑 CI、親自審查。</li>
+</ol>
+</section>
+
+<section>
+<h2><span class="no">二</span>這次查核更正了什麼</h2>
+<ol class="points">
+<li><b>SkillsBench 數字依最新版更正</b>：舊筆記寫的 +16.2 個百分點、軟體工程 +4.5、醫療 +51.9、84 題中 16 題變差、自生成 skill「無益」，都來自較早的版本。最新版是 87 題、+16.6 個百分點、軟體工程 +11.6、沒有醫療類、13 題變差、自生成 skill 低 8.1 到 11.5 個百分點。</li>
+<li><b>多 agent 研究數字更正</b>：舊筆記寫五種流程落後 1.71 到 8.76 個百分點，全文是 2.56 到 11.29。</li>
+<li><b>「skill 造成的失敗」描述更正</b>：1.6% 是 skill 描述誤導，不是「選錯 skill」；19.2% 是放錯位置，論文沒說是「skill 偏好的位置」。</li>
+<li><b>說明檔效率研究補上限制</b>：Lulla 等的研究沒有測正確性，只測時間與 token。</li>
+<li><b>效能 PR 研究已讀全文</b>：先前只讀摘要，數字經核對無誤。</li>
+</ol>
+</section>
+
+<section>
+<h2><span class="no">三</span>刪除的研究與原因</h2>
+<ol class="points">
+<li><b>關鍵章節讀不到</b>：More Skills, Worse Agents?（實驗章節未能讀到，「最多掉 21%」無法核對）、KernelPro（結果表格未能讀到）、ParBench（網站限制連線，無法讀取）。</li>
+<li><b>論文本身有問題</b>：LLM-HPC++（表格數字前後矛盾）、Evidence Over Plans（「壓縮越多效果越差」的說法沒有報告數字）。</li>
+<li><b>方法太弱</b>：Tokenomics（只用一個舊的多 agent 框架、30 題、無統計）、Where Do the Tokens Go?（每種設定只跑一次，作者自己承認無法區分方法效果與隨機變異）、Spec-Driven Development（概念分析，沒有自己的資料）。</li>
+<li><b>與你的工作關係較遠</b>：Context Rot（網頁搜尋任務，不是程式）、ConFixAgent（只測 Java）、CodegenBench（單次生成、非 agent，主要測非 x86 平台）、SkillRouter 與 SkillEval（大型 skill 庫的檢索與評分）、Who Will Become the Next Senior?（14 人訪談，談新人培育）。</li>
+<li><b>只讀到摘要</b>：Meta 的兩篇測試生成研究、SciCode、FormAI-v2、Lost in the Middle、套件幻覺原始研究（改引用已讀全文的 2026 年重現研究）、Agent Skill 評估綜述。</li>
+<li><b>非研究資料</b>：Anthropic 子 agent 技術文章、TechCrunch 報導。</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>
