@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 研究（二）：規劃、測試與省 token</title>
+</head>
+<body>
+<main>
+
+<h1>AI Agent 研究（二）：規劃、測試與省 token</h1>
+<div class="meta">整理日期：2026 年 11 月 2 日 · 10 篇參考文獻 · 全文查核版</div>
+
+<div class="lede">一句話總結：<b>先有測試、任務切小、減少無效探索，比加規劃步驟或多開 agent 有效</b>。token 花得多不代表做得好，多 agent 通常更貴、不一定更好。</div>
+
+<div class="note"><b>收錄門檻</b>：每篇論文都讀過全文，對照內文與表格核對數字，並檢查樣本數、重複次數、統計檢定與作者自述的限制；方法沒有重大問題才收錄，預印本照收但標明。句尾標籤是出處；「對你的意義」是整理者的判斷，不是論文結論。刪除的研究與原因見「AI Agent 研究（五）」。</div>
+
+<section>
+<h2><span class="no">一</span>規劃與測試</h2>
+<ol class="points">
+<li><b>agent 常不照自己宣告的計畫做</b>：在 SWE-bench 上，agent 宣告計畫後，完整照順序執行的軌跡只有 12.1% 到 25.4%；計畫越長越少照做。只給計畫當參考時，任務成功率提升有限。自動比對工具和人工的一致性中等（κ 約 0.3）。<a class="src" href="https://arxiv.org/abs/2609.38108">Oota 等 2026</a></li>
+<li><b>先寫測試再寫程式有幫助</b>：repo 層級的 Python 任務上，「先產生測試、再同時修正測試與程式」比 mini-SWE-agent 高 6.4 到 16.9 個百分點；拿掉先寫測試或拿掉同時修正，效果都下降。只測 Python、沒有統計檢定；最常見的失敗是程式通過自己寫的測試，但沒通過 repo 原本的測試。<a class="src" href="https://arxiv.org/abs/2608.16742">TDD-Agent 2026</a></li>
+<li><b>多輪修改會把原本對的東西改壞</b>：542 題單一函式的 Python 題目、每題 8 輪固定修改要求，第 8 輪時 GPT-4o 原有測試通過率從 90.2% 降到 72.4%，Llama-3.1-8B 從 76.1% 降到 31.6%。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
+<li><b>每輪重跑測試、退步就退回</b>：DeepSeek-V3 第 8 輪通過率從 75.8% 提升到 87.9%，Llama-3.1-8B 從 31.6% 提升到 47.3%。但修正用的測試就是評分用的測試，等於提前知道答案；只測兩個模型、沒有統計檢定。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
+<li><b>把意圖交代清楚，差很多</b>：加一個專門推測使用者目標與偏好的輔助 agent，在 GPT-5 模擬使用者的 500 題中，成功率從 18.1% 提升到 59.7%（論文前言另寫 13.5% 與 57.4%）；17 位開發者三週的真人使用中，86.2% 的建議被採用或稍改後採用，但沒有對照組。<a class="src" href="https://arxiv.org/abs/2510.21903">ToM-SWE 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>計畫寫下來不會自動被執行，要在關鍵步驟設檢查點，或把計畫拆成一步一步的小任務。效果最一致的是「先有測試」：先讓 agent 寫或補測試，你確認測試合理後再讓它改程式，每次改完跑完整回歸測試。</p>
+</section>
+
+<section>
+<h2><span class="no">二</span>省 token：錢花在哪、怎麼省</h2>
+<ol class="points">
+<li><b>token 多不等於做得好</b>：SWE-bench Verified 500 題、8 個模型、每題 4 次，成本最低的一群之後，花更多 token 準確率就不再提升甚至下降；花費高的執行常是反覆讀同一檔案、改了又改。同一題不同次執行，最貴的平均約是最便宜的 2 倍。<a class="src" href="https://arxiv.org/abs/2604.22750">Bai 等 2026</a></li>
+<li><b>成本主要是輸入</b>：即使有快取，讀取快取仍是金額最大的一項；探索與修改兩個階段約佔三分之二的回合。只分析一個模型。<a class="src" href="https://arxiv.org/abs/2604.22750">Bai 等 2026</a></li>
+<li><b>限制回合數能省錢，但會少解幾題</b>：100 題、3 個模型、每種設定只跑一次。上限設在第 75 百分位時，成本降 23.6%（Claude）、38.4%（GPT 4.1）、68.3%（Gemini），解題數分別 −4、−5、+2 題；設在第 25 百分位時 Gemini 從 63 題掉到 26 題。需要時才追加回合，成本可再降約 6% 到 24%（摘要寫 12% 到 24%，與表格不符）。百分位是用同一批題目算的，沒有另外驗證。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+<li><b>context 小時，管理機制很重要；夠大時差異很小</b>：4 個模型、2 個 benchmark，context 只有 32k 時，有管理機制比沒有高 35.7 個百分點（SWE-bench），到 128k 時只差 2.7。<a class="src" href="https://arxiv.org/abs/2609.20804">Fan 等 2026</a></li>
+<li><b>規劃步驟主要幫弱模型</b>：最小的 30B 模型加規劃後 SWE-bench 從 13.6% 提升到 25.2%；較強的模型沒有一致的提升，但有些能少花 26% 到 32% 的成本。只用 bash、不給專用工具，弱模型掉 15 個百分點，最強模型反而 +3.6、成本 −53%。每種設定看起來只跑一次，但有做配對檢定與多重比較校正。<a class="src" href="https://arxiv.org/abs/2609.20804">Fan 等 2026</a></li>
+<li><b>快取價格（官方文件）</b>：讀取快取一般是輸入價格的 0.1 倍，Opus 5.5 與 Sonnet 5.5 是 0.05 倍；寫入快取 1.25 倍（5 分鐘）或 2 倍（1 小時）。修改工具定義會讓整個快取失效；變更 effort 或 thinking 設定會讓對話部分的快取失效。<a class="src" href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic 文件 2026</a></li>
+<li><b>effort 等級（官方文件）</b>：Opus 5.5 預設 medium，適合範圍清楚的日常開發；修既有程式的 bug、需要驗證邊界條件時用 high；max 適合讓它長時間獨立處理的難題，但官方提醒 max 可能報酬遞減、容易想太多，先測試再大量使用。<a class="src" href="https://code.claude.com/docs/en/model-config">Anthropic 文件 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>省 token 最有效的是減少無效探索：任務開頭直接指定要看的檔案與範圍、一個任務一個對話、看到 agent 反覆讀同一檔案就中斷重新說明。記下一類任務平常要幾個回合，明顯超過時介入，但上限不要設太緊。一個工作階段中途不要頻繁切換 effort 或 MCP 工具，以免快取失效。</p>
+</section>
+
+<section>
+<h2><span class="no">三</span>多 agent：通常更貴，不一定更好</h2>
+<ol class="points">
+<li><b>六種多 agent 流程有五種輸給單一 agent</b>：同樣用 GPT-4.1、10 個 benchmark，五種固定流程平均落後 2.56 到 11.29 個百分點；唯一勝出的只多 1.44 個百分點，在誤差範圍內。每種只跑一次。<a class="src" href="https://arxiv.org/abs/2606.05670">Fu 等 2026</a></li>
+<li><b>agent 團隊成本高 1.8 到 5.1 倍</b>：50 個網頁應用程式、8 種設定各跑一次，四組「團隊 vs 單一 agent」只有一組顯著提升（GPT 6 Sol 中等 effort，+7.3 個百分點）。Claude Opus 5.5 中等 effort 時團隊 −0.3 個百分點；max effort 團隊每個應用程式 122 美元、單一 agent 23.77 美元，分數差距不顯著。多出的成本主要是每個子 agent 重新讀入的快取輸入。<a class="src" href="https://www.vals.ai/blog/multi-agent-vibe-code-bench">Vals AI 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>預設用單一 agent。只有在工作真的能切成互不相依的部分（例如同時查幾個獨立模組），才考慮子 agent，並先比較成本。</p>
+</section>
+
+<section>
+<h2><span class="no">四</span>參考文獻</h2>
+<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字；「部分章節未讀到」指主要結果已核對，但頁面截斷使部分章節或附錄沒讀到。</div>
+<ol>
+<li><a href="https://arxiv.org/abs/2609.38108">Do LLM Agents Execute the Plans They Declare?</a>，Oota 等，arXiv 2026 年 9 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2608.16742">TDD-Agent: Test-Driven Reasoning for Code Generation</a>，Yu 等，arXiv 2026 年 8 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2607.01855">Regression Accumulation in Multi-turn LLM Programming Conversations</a>，Huang 等，ASE 2026（正式發表，讀過全文；發表狀態依 ASE 2026 論文目錄）</li>
+<li><a href="https://arxiv.org/abs/2510.21903">TOM-SWE: User Mental Modeling For Software Engineering Agents</a>，Zhou 等，ICML 2026（正式發表，讀過全文；<a href="https://icml.cc/virtual/2026/poster/65025">ICML 頁面</a>）</li>
+<li><a href="https://arxiv.org/abs/2604.22750">How Do AI Agents Spend Your Money?</a>，Bai 等，arXiv 2026 年 4 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2510.16786">More with Less: An Empirical Study of Turn-Control Strategies for Efficient Coding Agents</a>，Gao、Peng，ICSE 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2609.20804">An Empirical Study of Harness Design for Coding Agents</a>，Fan 等，arXiv 2026 年 9 月（預印本，讀過全文）</li>
+<li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Prompt caching</a>、<a href="https://code.claude.com/docs/en/model-config">Model configuration</a>，Anthropic，2026（官方文件，2026 年 11 月 2 日查閱）</li>
+<li><a href="https://arxiv.org/abs/2606.05670">Do More Agents Help? Evaluating Accuracy and Cost in LLM Multi-Agent Workflows</a>，Fu 等，arXiv 2026 年 6 月（預印本，讀過全文）</li>
+<li><a href="https://www.vals.ai/blog/multi-agent-vibe-code-bench">Multi-Agent Vibe Code Bench</a>，Vals AI，2026 年 10 月（研究報告，未經同儕審查，讀過全文）</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>

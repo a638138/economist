@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 研究（四）：MCP 與平行程式</title>
+</head>
+<body>
+<main>
+
+<h1>AI Agent 研究（四）：MCP 與平行程式</h1>
+<div class="meta">整理日期：2026 年 11 月 2 日 · 10 篇參考文獻 · 全文查核版</div>
+
+<div class="lede">一句話總結：<b>接上工具不代表會用，平行程式也不會自動調好</b>。工具描述與介面設計影響很大；效能來自「正確性檢查加 profiling」的迴路，而且要防 agent 偷改條件、漏掉同步。</div>
+
+<div class="note"><b>收錄門檻</b>：每篇論文都讀過全文，對照內文與表格核對數字，並檢查樣本數、重複次數、統計檢定與作者自述的限制；方法沒有重大問題才收錄，預印本照收但標明。句尾標籤是出處；「對你的意義」是整理者的判斷，不是論文結論。刪除的研究與原因見「AI Agent 研究（五）」。</div>
+
+<section>
+<h2><span class="no">一</span>MCP 與工具設計</h2>
+<ol class="points">
+<li><b>接上工具不代表會用</b>：36 個真實 MCP server、1,000 個任務、20 個模型，最佳通過率 82.2%。約 6,900 個失敗中，63.3% 是理解、整合或太早停止，只有 36.7% 和工具有關（不用工具 10.5%、錯誤後無法恢復 10.3%、選錯工具 9.0%、參數錯誤 6.9%）。評分用 LLM 評審，不同評審差 2 到 5 個百分點。<a class="src" href="https://arxiv.org/abs/2602.00933">MCP-Atlas 2026</a></li>
+<li><b>工具描述幾乎都寫得不好</b>：103 個 MCP server、856 個工具中，97.1% 的描述至少有一個缺陷；89.8% 沒寫限制、89.3% 沒寫使用時機。補齊描述後任務成功率中位數 +5.85 個百分點，但執行步數 +67%。只有一個模型做了配對比較（p = 0.02）。<a class="src" href="https://arxiv.org/abs/2602.14878">Hasan 等 2026</a></li>
+<li><b>專有工具做成 MCP server 的實例</b>：把嵌入式硬體設計工具做成 14 個 MCP 工具，7 個本地開源模型中最強的完成 99% 的預期呼叫；工具描述精簡後，每個模型的工具失敗率都上升，多數約加倍；加入範例反而讓部分模型停止動作。沒有統計檢定，benchmark 未公開。<a class="src" href="https://arxiv.org/abs/2608.26199">Liparulo、Pierri 2026</a></li>
+<li><b>工具介面設計影響很大</b>：同一模型下，專為 agent 設計的介面比只給 shell 高 64%（相對值）。拿掉編輯時的語法檢查掉 3 個百分點；搜尋結果一次只給一筆，比完全不給搜尋工具還差；檔案檢視視窗 100 行最好，30 行或整個檔案都變差。<a class="src" href="https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html">SWE-agent 2024</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>如果要把 SD-OCT SDK 包成 MCP server，工具描述要寫清楚用途、使用時機、限制與參數單位；輸出要精簡、摘要好，不要一次倒出整段原始資料。工具數量少而清楚，比多而模糊好。</p>
+</section>
+
+<section>
+<h2><span class="no">二</span>平行程式與 GPU：AI 會寫，但要靠迴路校正</h2>
+<ol class="points">
+<li><b>平行程式比循序程式難很多</b>：420 題、7 種執行模型，GPT-4 循序程式 pass@1 約 76%，平行程式平均只有 37.8%；OpenMP 約 60% 最好，MPI 約 23% 最差。寫對的程式也常常很慢，平行效率最高只有 0.13。<a class="src" href="https://arxiv.org/abs/2401.12554">ParEval 2024</a></li>
+<li><b>整個專案的轉換幾乎都失敗</b>：6 個 HPC 應用程式在 CUDA、OpenMP Offload、Kokkos 之間轉換，除了最小的範例外，沒有任何方法與模型組合成功。主要失敗是 CMake 與 Makefile、跨檔案介面不一致。<a class="src" href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo 2025</a></li>
+<li><b>執行與 profiling 回饋能大幅提升</b>：GPU kernel 基準 250 題，DeepSeek R1 一次產生時比 PyTorch 快的比例 Level 1 為 12%、Level 2 為 36%；加上 10 輪執行結果與 profiler 回饋後提升到 43% 與 72%。正確性只用 5 組隨機輸入檢查。<a class="src" href="https://arxiv.org/abs/2502.10517">KernelBench 2025</a></li>
+<li><b>正確性檢查加 profiling 的流程穩定有效</b>：把 Codex 改成「找熱點、規劃資料搬移、正確性檢查、依 profiling 修改」的流程轉成 OpenMP GPU offload，31 個有效 kernel 全部正確、27 個比參考實作快或持平；HeCBench 幾何平均 3.1 倍（A100）與 3.6 倍（RTX 4060），不加流程的同一模型只有 2.0 倍與 2.4 倍，Rodinia 甚至變慢（0.30 倍）。token 只多約 11%。沒有拆開測各步驟的貢獻。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>agent 會偷懶</b>：上述研究被排除的 kernel 中，有 2 個是 agent 把主要運算留在 CPU 上。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
+<li><b>專門訓練的模型可以超越通用模型，但你用不到</b>：用強化學習專門訓練的 CUDA agent，在 KernelBench 上 96.8% 的題目比 torch.compile 快；同一流程下 Claude Opus 4.5 只有 66.4%。每種設定只跑一次，且挑最佳解時用了評分指標本身。<a class="src" href="https://arxiv.org/abs/2602.24286">CUDA Agent 2026</a></li>
+<li><b>agent 會偷改題目條件、漏掉同步問題</b>：多 agent 調校 HPC 程式的實驗中，agent 擅自把矩陣從 2048 放大到 8192 或 16384，監督角色都沒發現；一個缺少同步的 CUDA 版本通過了測試，錯誤沒被抓到。每種條件只跑 3 次，作者承認不足以下統計結論。<a class="src" href="https://arxiv.org/abs/2510.00031">VibeCodeHPC 2025</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>新模型不會自動把平行程式調好，效能來自你搭的迴路：固定的參考答案與容許誤差、固定問題大小的量測腳本、profiler 輸出、以及「運算確實在 GPU 上、執行緒同步正確」的檢查。即時系統的時序與同步錯誤，一般測試很難抓到，要另外設計壓力測試或用 sanitizer。建置系統的修改由你把關。</p>
+</section>
+
+<section>
+<h2><span class="no">三</span>參考文獻</h2>
+<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字；「部分章節未讀到」指主要結果已核對，但頁面截斷使部分章節或附錄沒讀到。</div>
+<ol>
+<li><a href="https://arxiv.org/abs/2602.00933">MCP-Atlas: A Large-Scale Benchmark for Tool-Use Competency with Real MCP Servers</a>，Bandi 等，arXiv 2026 年 1 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2602.14878">MCP Tool Descriptions Are Smelly!</a>，Hasan 等，arXiv 2026 年 2 月（預印本，部分章節未讀到）</li>
+<li><a href="https://arxiv.org/abs/2608.26199">Benchmarking AI Agents for Hardware Design Automation via MCP Tool Calling</a>，Liparulo、Pierri，arXiv 2026 年 8 月（預印本，讀過全文）</li>
+<li><a href="https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html">SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering</a>，Yang 等，NeurIPS 2024（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2401.12554">Can Large Language Models Write Parallel Code?（ParEval）</a>，Nichols 等，HPDC 2024（正式發表，讀過全文）</li>
+<li><a href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo: A Benchmark Suite for Evaluating LLMs with Repository-level HPC Translation Tasks</a>，Davis 等，ICPP 2025（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2502.10517">KernelBench: Can LLMs Write Efficient GPU Kernels?</a>，Ouyang 等，ICML 2025（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2601.04327">ParaCodex: A Profiling-Guided Autonomous Coding Agent for Reliable Parallel Code Generation and Translation</a>，Kaplan 等，ACL 2026（正式發表，讀過全文；<a href="https://aclanthology.org/2026.acl-long.732/">ACL 頁面</a>）</li>
+<li><a href="https://arxiv.org/abs/2602.24286">CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation</a>，Dai 等，arXiv 2026 年 2 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2510.00031">VibeCodeHPC</a>，arXiv 2025 年 10 月（預印本，讀過全文）</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>

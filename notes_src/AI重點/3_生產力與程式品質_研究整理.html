@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 研究（三）：生產力與程式品質</title>
+</head>
+<body>
+<main>
+
+<h1>AI Agent 研究（三）：生產力與程式品質</h1>
+<div class="meta">整理日期：2026 年 11 月 2 日 · 10 篇參考文獻 · 全文查核版</div>
+
+<div class="lede">一句話總結：<b>AI 不一定讓資深開發者變快，品質下降卻會持續</b>。效能類修改最難被接受，C++ 與多檔案修改仍明顯比 Python 單檔難，所以量測、CI 與人工審查不能省。</div>
+
+<div class="note"><b>收錄門檻</b>：每篇論文都讀過全文，對照內文與表格核對數字，並檢查樣本數、重複次數、統計檢定與作者自述的限制；方法沒有重大問題才收錄，預印本照收但標明。句尾標籤是出處；「對你的意義」是整理者的判斷，不是論文結論。刪除的研究與原因見「AI Agent 研究（五）」。</div>
+
+<section>
+<h2><span class="no">一</span>AI 真的讓人變快嗎</h2>
+<ol class="points">
+<li><b>2025 年初：資深開發者在自己的專案上反而變慢</b>：16 位資深開源開發者、246 個真實任務隨機分組，可用 AI 時完成時間增加 19%（信賴區間 +2% 到 +39%）；他們事前預期快 24%，事後仍以為快了 20%。工具主要是 Cursor 搭 Claude 3.5／3.7 Sonnet。<a class="src" href="https://arxiv.org/abs/2507.09089">METR 2025</a></li>
+<li><b>2026 年追蹤：可能變快了，但數據無法確認</b>：57 位開發者、800 多個任務，原參與者 −18%（信賴區間 −38% 到 +9%）、新參與者 −4%（−15% 到 +9%），負數代表變快，但都不顯著。很多人拒絕在不用 AI 的情況下工作，30% 到 50% 的人沒送出不想手寫的任務，METR 認為這是低估。<a class="src" href="https://metr.org/blog/2026-02-24-uplift-update/">METR 2026</a></li>
+<li><b>速度提升短暫，品質下降持續</b>：806 個採用 Cursor 的 GitHub 專案對比 1,380 個配對專案，新增程式碼行數在第一個月增加數倍，約兩個月後消失；靜態分析警告增加約 30%、程式複雜度增加約 41%，而且持續存在，並會拖慢之後的開發。<a class="src" href="https://arxiv.org/abs/2511.04427">He 等 2026</a></li>
+<li><b>用 AI 學新東西，理解會變差</b>：52 位工程師隨機分組學一個新的 Python 非同步函式庫，用 AI 組測驗分數低 17%（d = 0.738，p = 0.010），時間沒有顯著差異；差距最大的是除錯題。只問概念、自己解決錯誤的人分數較高，但這部分樣本很小、是探索性分析。<a class="src" href="https://arxiv.org/abs/2601.20245">Shen、Tamkin 2026</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>在你熟悉的大型 C++ 專案上，AI 不一定讓你變快，要自己量。品質下降是持續的，所以靜態分析與審查不能省。學新的 SDK 或演算法時，先自己理解，只把 AI 當成問概念的對象。</p>
+</section>
+
+<section>
+<h2><span class="no">二</span>什麼樣的 agent 產出會被接受</h2>
+<ol class="points">
+<li><b>任務類型影響最大</b>：7,156 個 agent 送出的 PR，整體接受率 69.3%；雜務類 84.0%、文件 82.1%，修 bug 66.0%、測試 61.5%，效能類最低只有 55.4%。觀察性資料，不能推論因果。<a class="src" href="https://arxiv.org/abs/2602.08915">Pinna 等 2026</a></li>
+<li><b>效能類的 agent PR 較少附量測</b>：2,260 個效能 PR，agent 寫的有附驗證的比例和人相近（82.3% 對 80.6%），但較多只靠推理說明（51.4% 對 39.3%），較少跑 benchmark（46.1% 對 57.2%）；合併率 54.4% 對 73.3%。約一半有驗證的 PR 沒附任何量化數字。<a class="src" href="https://arxiv.org/abs/2610.03969">Peng 等 2026</a></li>
+<li><b>多數被接受的 agent PR 沒經修改</b>：9,427 個已結案的 agent PR，被接受的中外圍貢獻者 76.5%、核心開發者約 72% 沒經修改。核心開發者審得比較仔細（審查留言 3.6 則對 2.0 則，有統計檢定、效果量小）；沒跑 CI 就合併的比例，外圍 19.1%、核心 11.2%（未檢定）。<a class="src" href="https://arxiv.org/abs/2601.20106">Cynthia 等 2026</a></li>
+<li><b>只有 AI 審查的 PR 合併率較低</b>：只經 AI 審查的 PR 合併率 45.2%，只經人審查的 68.4%；13 個 AI 審查工具中 12 個的有效建議比例低於 60%。沒有控制 PR 大小等因素。<a class="src" href="https://arxiv.org/abs/2604.03196">Chowdhury 等 2026</a></li>
+<li><b>真實的多檔案工作仍然很難</b>：參考解答平均改 4.1 個檔案、107.4 行的題目上，公開題目最佳 43.6%、企業內部題目最佳 17.8%。Claude Sonnet 4 的失敗中 35.6% 是 context 爆掉、17.0% 是不停讀檔。作者指出 C++ 題目偏少。<a class="src" href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro 2026</a></li>
+<li><b>C++ 明顯比 Python 難</b>：2025 年的多語言基準中，Python 最佳 52.2%，C++ 最佳只有 14.73%、C 只有 9.38%；改越多檔案、補丁越長，成功率越低。用的是 2025 年的模型，C++ 只有 129 題。<a class="src" href="https://proceedings.neurips.cc/paper_files/paper/2025/hash/5afa9cb1e917b898ad418216dc726fbd-Abstract-Datasets_and_Benchmarks_Track.html">Multi-SWE-bench 2025</a></li>
+</ol>
+<h3>對你的意義</h3>
+<p>效能相關的修改，要求 agent 附上修改前後的量測數字，沒數字不合併。跨模組的修改先拆小、直接指定檔案。合併前一定跑 CI 並親自審查，AI 審查只當補充。</p>
+</section>
+
+<section>
+<h2><span class="no">三</span>參考文獻</h2>
+<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字；「部分章節未讀到」指主要結果已核對，但頁面截斷使部分章節或附錄沒讀到。</div>
+<ol>
+<li><a href="https://arxiv.org/abs/2507.09089">Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity</a>，Becker 等，METR，2025 年 7 月（研究報告，未經同儕審查，讀過全文）</li>
+<li><a href="https://metr.org/blog/2026-02-24-uplift-update/">METR 開發者生產力追蹤研究更新</a>，METR，2026 年 2 月（研究報告，未經同儕審查，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2511.04427">Speed at the Cost of Quality: How Cursor AI Increases Short-Term Velocity and Long-Term Complexity in Open-Source Projects</a>，He 等，MSR 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2601.20245">How AI Impacts Skill Formation</a>，Shen、Tamkin，Anthropic，arXiv 2026 年 1 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2602.08915">Comparing AI Coding Agents: A Task-Stratified Analysis of Pull Request Acceptance</a>，Pinna 等，MSR 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2610.03969">How Do Coding Agents Optimize Software and Report Performance Validation?</a>，Peng 等，arXiv 2026 年 10 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2601.20106">Are We All Using Agents the Same Way? An Empirical Study of Core and Peripheral Developers' Use of Coding Agents</a>，Cynthia 等，MSR 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2604.03196">From Industry Claims to Empirical Reality: An Empirical Study of Code Review Agents in Pull Requests</a>，Chowdhury 等，MSR 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?</a>，Deng 等，ICML 2026（正式發表，讀過全文；<a href="https://icml.cc/virtual/2026/poster/61047">ICML 頁面</a>）</li>
+<li><a href="https://proceedings.neurips.cc/paper_files/paper/2025/hash/5afa9cb1e917b898ad418216dc726fbd-Abstract-Datasets_and_Benchmarks_Track.html">Multi-SWE-bench: A Multilingual Benchmark for Issue Resolving</a>，Zan 等，NeurIPS 2025（正式發表，讀過全文）</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>
