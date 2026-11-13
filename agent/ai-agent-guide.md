@@ -6,6 +6,7 @@
 - 這些規則是整理者依研究做的判斷；研究多為預印本，效果仍要在專案上驗證。
 - 與專案自己的 CLAUDE.md／AGENTS.md 衝突時，以專案為準。
 - 括號內是依據的筆記章節，例如（二-1）＝「AI Agent 研究（二）」第一節。
+- 這是完整版，適合查閱。實際給 agent 用的是拆分版：全域核心 `agent/core.md`、C++／GPU 專案用 `agent/cpp-gpu.md`、撰寫設定檔時才載入的 skill `agent/skills/agent-config-writing/SKILL.md`。
 
 ## 1. 驗證與回報（最常出錯，優先遵守）
 
