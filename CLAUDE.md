@@ -42,6 +42,8 @@
 - 由 `notes_src/AI重點/` 五篇筆記整理出、給使用者的 coding agent 讀的規則。網站上顯示的就是 agent 讀的同一份，只有兩個檔：
   - `agent/ai-agent-guide.md`：工作守則，每個 session 都讀。**核心規則保持 15 條以內**，只收模型預設不一定會做的規則，沒有直接研究支持的要標「做法」；C++／GPU 規則放在標明「只在這類專案適用」的小節。
   - `agent/skills/agent-config-writing/SKILL.md`：撰寫 CLAUDE.md、SKILL.md、MCP 工具時才載入的 skill。
+- 另有不顯示在網站上的：`agent/agents/reviewer.md`（只讀的獨立審查子 agent，守則「獨立審查」那條用它）、`agent/commands/review.md` 與 `handoff.md`（使用者指令 /review、/handoff）。改守則的審查或交接規則時，這三個檔要一起對齊。
+- 守則第 2 版的內容來自使用者的專案經驗（標「專案經驗」），修改時保留這些條目與標示，不要用研究筆記覆蓋。
 - 使用者在電腦上執行 `python tools/install_agent_rules.py` 安裝到 `~/.claude`。
 - **改到 AI重點 筆記的結論或「對你的意義」時，同步更新這兩個檔**：規則用祈使句、一行一條、句尾標出依據章節（例如「（二-1）」），不放數字細節；更新檔頭的日期。改完提醒使用者在電腦上重跑安裝腳本。
 - 只收對 agent 行為有影響的規則；只對使用者本人有用的建議（例如 effort 怎麼設）留在筆記裡。
