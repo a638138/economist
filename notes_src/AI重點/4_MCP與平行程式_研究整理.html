@@ -9,7 +9,7 @@
 <main>
 
 <h1>AI Agent 研究（四）：MCP 與平行程式</h1>
-<div class="meta">整理日期：2026 年 11 月 2 日 · 10 篇參考文獻 · 全文查核版</div>
+<div class="meta">整理日期：2026 年 11 月 14 日 · 12 篇參考文獻 · 全文查核版（11 月 14 日補充 2 篇，標示<span class="new">新增</span>）</div>
 
 <div class="lede">一句話總結：<b>接上工具不代表會用，平行程式也不會自動調好</b>。工具描述與介面設計影響很大；效能來自「正確性檢查加 profiling」的迴路，而且要防 agent 偷改條件、漏掉同步。</div>
 
@@ -37,9 +37,12 @@
 <li><b>agent 會偷懶</b>：上述研究被排除的 kernel 中，有 2 個是 agent 把主要運算留在 CPU 上。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
 <li><b>專門訓練的模型可以超越通用模型，但你用不到</b>：用強化學習專門訓練的 CUDA agent，在 KernelBench 上 96.8% 的題目比 torch.compile 快；同一流程下 Claude Opus 4.5 只有 66.4%。每種設定只跑一次，且挑最佳解時用了評分指標本身。<a class="src" href="https://arxiv.org/abs/2602.24286">CUDA Agent 2026</a></li>
 <li><b>agent 會偷改題目條件、漏掉同步問題</b>：多 agent 調校 HPC 程式的實驗中，agent 擅自把矩陣從 2048 放大到 8192 或 16384，監督角色都沒發現；一個缺少同步的 CUDA 版本通過了測試，錯誤沒被抓到。每種條件只跑 3 次，作者承認不足以下統計結論。<a class="src" href="https://arxiv.org/abs/2510.00031">VibeCodeHPC 2025</a></li>
+<li><b>真實程式裡的熱點最佳化：CUDA 只有約四成是對的</b><span class="new">新增</span>：114 個完整程式（92 個 CPU／OpenMP、22 個 CUDA），用 profiler 找出熱點函式，讓 GPT-5.1、Claude Sonnet 4.5、Qwen3-Coder 各產生 10 個改寫版本（單次生成，沒有執行回饋）。結果正確的比例：循序 76.9%、OpenMP 61.4%、CUDA 38.8%；CUDA 有 35.2% 連編譯都不過。要求至少快 1.5 倍時，3 次中至少有 1 次達標的機率：循序 0.10 到 0.17、OpenMP 約 0.15 到 0.25、CUDA 約 0.09 到 0.11。<a class="src" href="https://arxiv.org/abs/2611.02752">HPC-Bench 2026</a></li>
+<li><b>短的 kernel 平行化反而變慢</b><span class="new">新增</span>：同一研究中，結構簡單的程式在 16 執行緒 OpenMP 下，61 個有 41 個（67%）連 1.05 倍都達不到，因為 kernel 本身太短（中位數 7.33 ms，有些只有幾微秒），執行緒開銷就吃掉了好處；最複雜的一組則是寫不對。作者主張評估要看「得到正確且夠快結果的機率」，不能只看最好的加速倍數。<a class="src" href="https://arxiv.org/abs/2611.02752">HPC-Bench 2026</a></li>
+<li><b>移植手動最佳化過的 C++ 到 CUDA：有時先「去最佳化」比較好</b><span class="new">新增</span>：12 個為 Arm CPU 手動最佳化（NEON SIMD、分塊、預先打包）的 HPC kernel，比較「直接轉 CUDA 再最佳化」與「先讓模型移除 CPU 專屬最佳化、再轉 CUDA 再最佳化」，各 50 次。單次流程下 18 組可檢定的比較中，5 組先去最佳化較快、3 組直接轉較快（校正多重比較後）；最明顯的是卷積，Qwen3-235B 直接轉只有 12% 成功、去最佳化後 96%，成功版本的效能中位數 106 對 4,366 GFlops。但去最佳化多一次呼叫，拿同樣呼叫次數重試直接轉的對照組時，只剩 4 組領先；加上反覆生成與修正後，兩種做法的差距大多縮小。用的是 gpt-oss-120b 與 Qwen3-235B，不是最新的前沿模型；正確性只在測試尺寸下驗證。<a class="src" href="https://arxiv.org/abs/2606.06063">Mukunoki 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>新模型不會自動把平行程式調好，效能來自你搭的迴路：固定的參考答案與容許誤差、固定問題大小的量測腳本、profiler 輸出、以及「運算確實在 GPU 上、執行緒同步正確」的檢查。即時系統的時序與同步錯誤，一般測試很難抓到，要另外設計壓力測試或用 sanitizer。建置系統的修改由你把關。</p>
+<p>新模型不會自動把平行程式調好，效能來自你搭的迴路：固定的參考答案與容許誤差、固定問題大小的量測腳本、profiler 輸出、以及「運算確實在 GPU 上、執行緒同步正確」的檢查。即時系統的時序與同步錯誤，一般測試很難抓到，要另外設計壓力測試或用 sanitizer。建置系統的修改由你把關。<span class="new">更新</span>沒有執行回饋時，CUDA 改寫大約六成是錯的，所以一定要讓 agent 能自己編譯、執行、比對結果，再談效能。平行化前先量 kernel 時間：只有幾毫秒以下的，開執行緒或搬到 GPU 可能得不償失。把已經為 CPU 手調過（SIMD intrinsics、分塊）的程式移到 GPU 時，如果直接轉一直失敗，可以先請 agent 寫出一個乾淨、未最佳化、結果相同的參考版本，再從那裡轉 CUDA；但這不是預設做法，直接轉能成功時不一定比較差。</p>
 </section>
 
 <section>
@@ -55,6 +58,8 @@
 <li><a href="https://arxiv.org/abs/2502.10517">KernelBench: Can LLMs Write Efficient GPU Kernels?</a>，Ouyang 等，ICML 2025（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2601.04327">ParaCodex: A Profiling-Guided Autonomous Coding Agent for Reliable Parallel Code Generation and Translation</a>，Kaplan 等，ACL 2026（正式發表，讀過全文；<a href="https://aclanthology.org/2026.acl-long.732/">ACL 頁面</a>）</li>
 <li><a href="https://arxiv.org/abs/2602.24286">CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation</a>，Dai 等，arXiv 2026 年 2 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2611.02752">HPC-Bench: A Comprehensive Benchmark for High Performance Computing Codes</a>，Cui 等，NeurIPS 2026 Evaluations &amp; Datasets Track（已接受，讀過全文，部分附錄未讀到）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2606.06063">LLM-Based Porting of Optimized C++ to CUDA Through Deoptimization and Reoptimization</a>，Mukunoki 等，arXiv 2026 年 6 月（預印本，讀過全文）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2510.00031">VibeCodeHPC</a>，arXiv 2025 年 10 月（預印本，讀過全文）</li>
 </ol>
 </section>

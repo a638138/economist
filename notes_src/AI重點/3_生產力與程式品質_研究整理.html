@@ -9,9 +9,9 @@
 <main>
 
 <h1>AI Agent 研究（三）：生產力與程式品質</h1>
-<div class="meta">整理日期：2026 年 11 月 2 日 · 10 篇參考文獻 · 全文查核版</div>
+<div class="meta">整理日期：2026 年 11 月 14 日 · 12 篇參考文獻 · 全文查核版（11 月 14 日補充 2 篇，標示<span class="new">新增</span>）</div>
 
-<div class="lede">一句話總結：<b>AI 不一定讓資深開發者變快，品質下降卻會持續</b>。效能類修改最難被接受，C++ 與多檔案修改仍明顯比 Python 單檔難，所以量測、CI 與人工審查不能省。</div>
+<div class="lede">一句話總結：<b>AI 不一定讓資深開發者變快，品質下降卻會持續</b>。2026 年的命令列 agent 在大公司內看得到持續的產出增加，但沒有人量品質；有提交 AI 設定檔的專案品質退化較少。效能類修改最難被接受，C++ 與多檔案修改仍明顯比 Python 單檔難，所以量測、CI 與人工審查不能省。</div>
 
 <div class="note"><b>收錄門檻</b>：每篇論文都讀過全文，對照內文與表格核對數字，並檢查樣本數、重複次數、統計檢定與作者自述的限制；方法沒有重大問題才收錄，預印本照收但標明。句尾標籤是出處；「對你的意義」是整理者的判斷，不是論文結論。刪除的研究與原因見「AI Agent 研究（五）」。</div>
 
@@ -22,9 +22,11 @@
 <li><b>2026 年追蹤：可能變快了，但數據無法確認</b>：57 位開發者、800 多個任務，原參與者 −18%（信賴區間 −38% 到 +9%）、新參與者 −4%（−15% 到 +9%），負數代表變快，但都不顯著。很多人拒絕在不用 AI 的情況下工作，30% 到 50% 的人沒送出不想手寫的任務，METR 認為這是低估。<a class="src" href="https://metr.org/blog/2026-02-24-uplift-update/">METR 2026</a></li>
 <li><b>速度提升短暫，品質下降持續</b>：806 個採用 Cursor 的 GitHub 專案對比 1,380 個配對專案，新增程式碼行數在第一個月增加數倍，約兩個月後消失；靜態分析警告增加約 30%、程式複雜度增加約 41%，而且持續存在，並會拖慢之後的開發。<a class="src" href="https://arxiv.org/abs/2511.04427">He 等 2026</a></li>
 <li><b>用 AI 學新東西，理解會變差</b>：52 位工程師隨機分組學一個新的 Python 非同步函式庫，用 AI 組測驗分數低 17%（d = 0.738，p = 0.010），時間沒有顯著差異；差距最大的是除錯題。只問概念、自己解決錯誤的人分數較高，但這部分樣本很小、是探索性分析。<a class="src" href="https://arxiv.org/abs/2601.20245">Shen、Tamkin 2026</a></li>
+<li><b>2026 年命令列 agent：合併的 PR 增加，四個月沒消退</b><span class="new">新增</span>：Microsoft 數萬名工程師 2026 年 1 月到 4 月導入 Claude Code 與 GitHub Copilot CLI，合成對照法估計導入者每人每天合併的 PR 多 24.0%（95% 可信區間 +14.5% 到 +33.7%），2 月 +29.4%、3 到 4 月 +20.0%，差異在誤差內；在 2025 年 10 月放假的安慰劑檢定沒有效果（−1.1%）。同一人比自己不用的週，用 Claude Code 的週 +11.4%、用 Copilot CLI 的週 +24.9%；一週用 5 天以上 +50.1%，但作者說這是相關、不是因果（用得多的週可能工作較輕）。只量合併的 PR 數量，沒有量 PR 大小、退版、bug 或程式品質，作者自己說這是「最迫切的未解問題」，也承認 PR 數會獎勵小而頻繁的提交。作者都是 Microsoft 員工、單一公司、預印本。<a class="src" href="https://arxiv.org/abs/2607.01418">Murphy-Hill 等 2026</a></li>
+<li><b>品質退化幅度跟有沒有 AI 設定檔有關</b><span class="new">新增</span>：上面 Cursor 研究的延伸分析，先用 agent 的開源專案中，沒提交任何 AI 設定檔的，導入後複雜度 +52.7%、靜態分析警告 +24.1%；有提交的 +26.7% 與 +14.0%。觀察性研究，兩組本來就不同，差距本身沒有經過檢定。詳見「AI Agent 研究（一）」第三節。<a class="src" href="https://arxiv.org/abs/2608.25241">Denisov-Blanch 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>在你熟悉的大型 C++ 專案上，AI 不一定讓你變快，要自己量。品質下降是持續的，所以靜態分析與審查不能省。學新的 SDK 或演算法時，先自己理解，只把 AI 當成問概念的對象。</p>
+<p>在你熟悉的大型 C++ 專案上，AI 不一定讓你變快，要自己量。品質下降是持續的，所以靜態分析與審查不能省。學新的 SDK 或演算法時，先自己理解，只把 AI 當成問概念的對象。<span class="new">更新</span>新的證據偏向「2026 年的 agent 確實讓產出變多」，但量的都是 PR 或 commit 數，沒有一篇同時證明品質沒變差。自己評估時，數量與品質要一起記：除了完成多少任務，也追蹤靜態分析警告、複雜度與之後的修 bug 次數。</p>
 </section>
 
 <section>
@@ -49,6 +51,8 @@
 <li><a href="https://metr.org/blog/2026-02-24-uplift-update/">METR 開發者生產力追蹤研究更新</a>，METR，2026 年 2 月（研究報告，未經同儕審查，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2511.04427">Speed at the Cost of Quality: How Cursor AI Increases Short-Term Velocity and Long-Term Complexity in Open-Source Projects</a>，He 等，MSR 2026（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2601.20245">How AI Impacts Skill Formation</a>，Shen、Tamkin，Anthropic，arXiv 2026 年 1 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2607.01418">Adoption and Impact of Command-Line AI Coding Agents: A Study of Microsoft's Early 2026 Rollout of Claude Code and GitHub Copilot CLI</a>，Murphy-Hill 等，Microsoft，arXiv 2026 年 7 月（預印本，讀過全文）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2608.25241">A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption</a>，Denisov-Blanch 等，ASE 2026（正式發表，讀過全文）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2602.08915">Comparing AI Coding Agents: A Task-Stratified Analysis of Pull Request Acceptance</a>，Pinna 等，MSR 2026（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2610.03969">How Do Coding Agents Optimize Software and Report Performance Validation?</a>，Peng 等，arXiv 2026 年 10 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2601.20106">Are We All Using Agents the Same Way? An Empirical Study of Core and Peripheral Developers' Use of Coding Agents</a>，Cynthia 等，MSR 2026（正式發表，讀過全文）</li>

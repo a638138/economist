@@ -9,9 +9,9 @@
 <main>
 
 <h1>AI Agent 研究（一）：Skill 與說明檔</h1>
-<div class="meta">整理日期：2026 年 11 月 2 日 · 18 篇參考文獻 · 全文查核版</div>
+<div class="meta">整理日期：2026 年 11 月 14 日 · 20 篇參考文獻 · 全文查核版（11 月 14 日補充 2 篇，標示<span class="new">新增</span>）</div>
 
-<div class="lede">一句話總結：<b>skill 和說明檔平均有幫助，但很不穩定</b>。人工寫、少而精、註明適用條件的才有效；讓模型自己產生的 skill 或說明檔多半沒用甚至扣分，而且公開 skill 約四分之一有安全漏洞。</div>
+<div class="lede">一句話總結：<b>skill 和說明檔平均有幫助，但很不穩定</b>。人工寫、少而精、註明適用條件的才有效；讓模型自己產生的 skill 或說明檔多半沒用甚至扣分，而且公開 skill 約四分之一有安全漏洞。說明檔的長度、規則放的位置影響不大，<b>一定要守的規則要靠 hook、lint 或 CI 強制</b>，不能只靠寫在檔案裡。</div>
 
 <div class="note"><b>收錄門檻</b>：每篇論文都讀過全文，對照內文與表格核對數字，並檢查樣本數、重複次數、統計檢定與作者自述的限制；方法沒有重大問題才收錄，預印本照收但標明。句尾標籤是出處；「對你的意義」是整理者的判斷，不是論文結論。刪除的研究與原因見「AI Agent 研究（五）」。</div>
 
@@ -60,9 +60,12 @@
 <li><b>大家都在寫什麼</b>：2,303 個說明檔中，測試（75.9%）、實作細節（70.8%）、架構（68.1%）最常見；安全只有 14.8%、效能只有 14.5%。檔案中位數 335 到 535 字，大多持續增加內容、很少刪減。<a class="src" href="https://arxiv.org/abs/2511.12884">Agent READMEs 2025</a></li>
 <li><b>指令越多，越容易漏</b>：在「報告中包含指定關鍵字」的人工任務上，最強模型在 500 條指令時只做到 68.9%；靠後的指令較常被忽略，錯誤以完全漏掉為主。這是人工設計的關鍵字任務，不等於真實程式指令。<a class="src" href="https://arxiv.org/abs/2507.11538">IFScale 2025</a></li>
 <li><b>對話被壓縮後，規則會消失</b>：只在對話中講過的規則，長對話被壓縮摘要後，7 個模型合計有 30% 的機率違反（最高 59%），完整保留對話時是 0%。在 3 個模型、5 個軟性規則任務上，規則放在系統訊息時違規增加 0 個百分點，放在使用者訊息時增加 50 個百分點。五模型重複實驗：違規增加 37 個百分點（95% 信賴區間 31 到 43）。<a class="src" href="https://arxiv.org/abs/2606.22528">Chen 2026</a></li>
+<li><b>檔案長度、規則位置、拆成幾個檔，都看不出差別</b><span class="new">新增</span>：Claude Code 1,650 個 session（主要用 Sonnet 4.6，每種條件 50 次）、2 個 TypeScript 專案、5 種任務，規則是「每個函式開頭加一行指定註解」。CLAUDE.md 從 25 行到 500 行，遵守率 60.0% 到 67.7%（p = 0.16）；規則放第 2 行或第 250 行，67.7% 對 61.8%，校正多重比較後不顯著；拆成 CLAUDE.md 加 AGENTS.md 加子目錄檔案，或在另一個檔案放互相矛盾的規則，也都沒有可偵測的差異。長度與矛盾規則有貝氏因子支持「真的沒差」；位置與拆檔只能排除約 6 個百分點以上的影響。沒有說明檔時遵守率是 0%，所以規則有被讀到，只是做不滿。<a class="src" href="https://arxiv.org/abs/2605.10039">McMillan 2026</a></li>
+<li><b>影響最大的是任務類型與對話長度</b><span class="new">新增</span>：同一條規則在不同任務的遵守率從 45.1%（重構既有版面）到 84.4%；同一個 session 裡 agent 每多寫一個函式，遵守的勝算約降 5.6%（OR = 0.944），在第二個專案與 Opus 4.6 上方向相同。這是分析時才發現、不是事先設定的假設；規則很簡單、只測 Anthropic 模型與單輪模式，換成「改 schema 要同步改 migration」這類規則是否一樣，作者說還不知道。<a class="src" href="https://arxiv.org/abs/2605.10039">McMillan 2026</a></li>
+<li><b>有提交 AI 設定檔的專案，導入 agent 後品質退化較少</b><span class="new">新增</span>：509 個導入 agent 的開源專案搭配配對對照組，用交錯式差異中的差異分析，以第一個 agent PR 為導入點。先用 agent 的專案中，沒有提交任何 AI 設定檔（規則檔、CLAUDE.md 等）的，導入後認知複雜度 +52.7%、靜態分析警告 +24.1%；有提交的是 +26.7% 與 +14.0%。兩組 commit 數都增加（+37.6% 與 +27.5%）。另外 441 個企業 repo 中，73.8% 的設定檔提交後就再也沒改過。這是觀察性研究：有設定檔的專案原本就較成熟（星數平均 4,907 對 831），作者自稱「用來產生假設」；論文也沒有檢定兩組差距本身是否顯著，而且只看「有沒有」設定檔，沒看內容。<a class="src" href="https://arxiv.org/abs/2608.25241">Denisov-Blanch 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>CLAUDE.md 只寫 README 沒有、agent 自己查不到的事：建置與測試指令、SDK 的硬體限制、即時執行緒不可配置記憶體這類規則。不要用 /init 自動產生後直接留用。重要規則寫進 CLAUDE.md，不要只在對話中說，因為長對話壓縮後可能被丟掉。</p>
+<p>CLAUDE.md 只寫 README 沒有、agent 自己查不到的事：建置與測試指令、SDK 的硬體限制、即時執行緒不可配置記憶體這類規則。不要用 /init 自動產生後直接留用。重要規則寫進 CLAUDE.md，不要只在對話中說，因為長對話壓縮後可能被丟掉。<span class="new">更新</span>不必再為檔案長度（500 行內）、規則排第幾行或要不要拆檔費心，把力氣放在內容。就算寫了，簡單規則也只有約六成到七成的遵守率，而且寫越多程式越容易漏，所以「違反就會出事」的規則（例如即時執行緒不可配置記憶體）要另外做成 hook、lint 規則、編譯期檢查或 CI 測試來擋；CLAUDE.md 負責告訴 agent 為什麼，機械檢查負責確保做到。長任務中途可以提醒一次關鍵規則，或拆成較短的 session。</p>
 </section>
 
 <section>
@@ -95,6 +98,8 @@
 <li><a href="https://arxiv.org/abs/2511.12884">Agent READMEs: An Empirical Study of Context Files for Agentic Coding</a>，Chatlatanagulchai 等，arXiv 2025 年 11 月（預印本，部分章節未讀到）</li>
 <li><a href="https://arxiv.org/abs/2507.11538">How Many Instructions Can LLMs Follow at Once?（IFScale）</a>，Jaroslawicz 等，NeurIPS 2025 workshop（workshop，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2606.22528">Governance Decay: How Context Compaction Silently Erases Safety Constraints in Long-Horizon LLM Agents</a>，Chen，arXiv 2026 年 6 月（預印本，部分章節未讀到）</li>
+<li><a href="https://arxiv.org/abs/2605.10039">Instruction Adherence in Coding Agent Configuration Files: A Factorial Study of Four File-Structure Variables</a>，McMillan，arXiv 2026 年 5 月（預印本，讀過全文）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2608.25241">A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption</a>，Denisov-Blanch 等，ASE 2026（正式發表，讀過全文，依 2026 年 9 月 v2）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2601.10338">Agent Skills in the Wild: An Empirical Study of Security Vulnerabilities at Scale</a>，arXiv 2026 年 1 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2604.03070">How Your Credentials Are Leaked by LLM Agent Skills: An Empirical Study</a>，Chen 等，ASE 2026（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2602.06547">"Do Not Mention This to the User": Detecting and Understanding Malicious Agent Skills in the Wild</a>，USENIX Security 2026（正式發表，讀過全文）</li>
