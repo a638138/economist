@@ -39,12 +39,11 @@
 - 刪除：`git rm` 該檔並推送，Action 會同步刪除網站上的那篇。
 
 ## AI Agent 工作守則（`agent/`）
-- `agent/ai-agent-guide.md`：`notes_src/AI重點/` 五篇筆記的完整守則版，也顯示在網站上。
-- 實際給 agent 用的是拆分版（使用者在電腦上執行 `python tools/install_agent_rules.py` 安裝到 `~/.claude`）：
-  - `agent/core.md`：全域核心規則，每個 session 都讀，**保持 15 條以內**，只放模型預設不一定會做的事。
-  - `agent/cpp-gpu.md`：C++／GPU／即時系統專案用，由各專案的 CLAUDE.md 引用。
+- 由 `notes_src/AI重點/` 五篇筆記整理出、給使用者的 coding agent 讀的規則。網站上顯示的就是 agent 讀的同一份，只有兩個檔：
+  - `agent/ai-agent-guide.md`：工作守則，每個 session 都讀。**核心規則保持 15 條以內**，只收模型預設不一定會做、而且有研究支持的規則；C++／GPU 規則放在標明「只在這類專案適用」的小節。
   - `agent/skills/agent-config-writing/SKILL.md`：撰寫 CLAUDE.md、SKILL.md、MCP 工具時才載入的 skill。
-- **改到 AI重點 筆記的結論或「對你的意義」時，同步更新完整守則與對應的拆分檔**：規則用祈使句、一行一條；完整守則句尾標出依據章節（例如「（二-1）」），不放數字細節；更新檔頭的日期。改完提醒使用者在電腦上重跑安裝腳本。
+- 使用者在電腦上執行 `python tools/install_agent_rules.py` 安裝到 `~/.claude`。
+- **改到 AI重點 筆記的結論或「對你的意義」時，同步更新這兩個檔**：規則用祈使句、一行一條、句尾標出依據章節（例如「（二-1）」），不放數字細節；更新檔頭的日期。改完提醒使用者在電腦上重跑安裝腳本。
 - 只收對 agent 行為有影響的規則；只對使用者本人有用的建議（例如 effort 怎麼設）留在筆記裡。
 - 網頁版：產生程式會把它轉成 HTML，列在筆記分頁「AI重點」的最後一篇（`tools/build_site.py` 的 `NOTE_LINKED`）；只支援 `#`、`##`、段落、`- ` 清單、行內 `code`、`**粗體**`，不要用表格或巢狀清單。
 - 這份 md 是唯一來源，直接改它；提交與推送方式同筆記（Action 也會處理 `agent/` 的變動）。

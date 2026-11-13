@@ -3,9 +3,10 @@ name: agent-config-writing
 description: 撰寫或修改給 AI agent 讀的設定與工具時使用：CLAUDE.md、AGENTS.md、SKILL.md、Cursor rules 等說明檔，或設計 MCP server 的工具。依實證研究整理寫法與檢查清單。
 ---
 
-# 撰寫 agent 設定檔與工具
+# AI Agent skill：撰寫設定檔與工具
 
-依實證研究整理（證據：https://a638138.github.io/economist/notes/ 「AI Agent 研究（一）、（四）」）。
+撰寫 CLAUDE.md、SKILL.md 或 MCP 工具時才載入的 skill，依實證研究整理。整理日期：2026 年 11 月 14 日。
+證據見 https://a638138.github.io/economist/notes/ 「AI Agent 研究（一）、（四）」。
 
 ## 最重要：寫進檔案的規則只會被部分遵守
 

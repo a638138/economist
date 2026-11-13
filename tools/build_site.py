@@ -56,7 +56,8 @@ NOTE_PAGES = [
     {"slug": "invest", "label": "投資", "title": "投資筆記", "desc": "投資原則與研究", "groups": {"投資"}},
 ]
 # 放在 notes_src 以外的 Markdown 也列進某個分類（原檔是唯一來源，網址固定；轉成 HTML 顯示）。
-NOTE_LINKED = {"AI重點": [OUT / "agent" / "ai-agent-guide.md"]}
+NOTE_LINKED = {"AI重點": [OUT / "agent" / "ai-agent-guide.md",
+                          OUT / "agent" / "skills" / "agent-config-writing" / "SKILL.md"]}
 NOTE_DATE_RE = re.compile(r"(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日")
 
 DATE_RE = re.compile(r"(\d{4})年(\d{1,2})月(\d{1,2})日")
@@ -203,6 +204,7 @@ def md_inline(s: str) -> str:
 def md_to_html(text: str, raw_href: str) -> str:
     """把筆記用的簡單 Markdown（#、##、段落、- 清單）轉成筆記頁格式的 HTML。"""
     title, blocks, para, items, in_section = "", [], [], [], False
+    text = re.sub(r"\A---\n.*?\n---\n", "", text.replace("\r\n", "\n"), flags=re.S)  # skill 的 front matter
 
     def flush():
         if para:
