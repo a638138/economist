@@ -1,6 +1,6 @@
 # AI Agent 工作守則（實證整理版）
 
-給 coding agent 讀的工作規則。依「AI Agent 研究（一）～（五）」整理，2026-11-14 版。
+給 coding agent 讀的工作規則，依「AI Agent 研究（一）～（五）」整理。整理日期：2026 年 11 月 14 日。
 完整證據、數字與研究限制：https://a638138.github.io/economist/notes/
 
 - 這些規則是整理者依研究做的判斷；研究多為預印本，效果仍要在專案上驗證。

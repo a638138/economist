@@ -55,6 +55,8 @@ NOTE_PAGES = [
     {"slug": "notes", "label": "筆記", "title": "個人筆記", "desc": "研究整理", "groups": None},
     {"slug": "invest", "label": "投資", "title": "投資筆記", "desc": "投資原則與研究", "groups": {"投資"}},
 ]
+# 放在 notes_src 以外的 Markdown 也列進某個分類（原檔是唯一來源，網址固定；轉成 HTML 顯示）。
+NOTE_LINKED = {"AI重點": [OUT / "agent" / "ai-agent-guide.md"]}
 NOTE_DATE_RE = re.compile(r"(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日")
 
 DATE_RE = re.compile(r"(\d{4})年(\d{1,2})月(\d{1,2})日")
@@ -183,6 +185,61 @@ def build_notes():
         build_note_page(page)
 
 
+def md_inline(s: str) -> str:
+    """Markdown 行內語法：`code`、**粗體**、網址。"""
+    parts = re.split(r"(`[^`]+`)", s)
+    out = []
+    for p in parts:
+        if p.startswith("`") and p.endswith("`") and len(p) > 1:
+            out.append(f"<code>{escape(p[1:-1])}</code>")
+            continue
+        p = escape(p, quote=False)
+        p = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", p)
+        p = re.sub(r"(https?://[^\s）)<]+)", r'<a href="\1">\1</a>', p)
+        out.append(p)
+    return "".join(out)
+
+
+def md_to_html(text: str, raw_href: str) -> str:
+    """把筆記用的簡單 Markdown（#、##、段落、- 清單）轉成筆記頁格式的 HTML。"""
+    title, blocks, para, items, in_section = "", [], [], [], False
+
+    def flush():
+        if para:
+            blocks.append(f"<p>{md_inline(' '.join(para))}</p>")
+            para.clear()
+        if items:
+            blocks.append("<ul>" + "".join(f"<li>{md_inline(i)}</li>" for i in items) + "</ul>")
+            items.clear()
+    for line in text.splitlines():
+        s = line.strip()
+        if s.startswith("## "):
+            flush()
+            blocks.append(("</section>\n" if in_section else "") + f"<section>\n<h2>{md_inline(s[3:])}</h2>")
+            in_section = True
+        elif s.startswith("# "):
+            flush()
+            title = s[2:].strip()
+            blocks.append(f"<h1>{md_inline(title)}</h1>")
+            blocks.append(f'<div class="note">這一篇是給 coding agent 讀的 Markdown 原檔轉成的網頁版。'
+                          f'<a href="{raw_href}" download>下載 .md 原檔</a>，'
+                          f'或讓 agent 直接讀 <a href="{raw_href}">原檔網址</a>。</div>')
+        elif s.startswith("- "):
+            if para:
+                flush()
+            items.append(s[2:])
+        elif not s:
+            flush()
+        else:
+            if items:
+                flush()
+            para.append(s)
+    flush()
+    if in_section:
+        blocks.append("</section>")
+    return f"<title>{escape(title)}</title><main>\n" + "\n".join(blocks) + "\n</main>"
+
+
 def build_note_page(page):
     """一個筆記類分頁：仿「AI 教材」的側欄＋單篇閱讀版面。"""
     out = OUT / page["slug"]
@@ -190,12 +247,16 @@ def build_note_page(page):
         shutil.rmtree(out)          # 整個重建，來源刪掉的筆記網站上也會消失
     nav, days, n = [], [], 0
     for group in note_groups(page):
-        files = sorted(group.glob("*.html"))
+        files = sorted(group.glob("*.html")) + [
+            f for f in NOTE_LINKED.get(group.name, []) if f.exists()]
         if not files:
             continue
         nav.append(f'<li class="nav-group">{escape(group.name)}</li>')
         for f in files:
             html = f.read_text(encoding="utf-8", errors="ignore")
+            if f.suffix == ".md":
+                href = "../" + f.relative_to(OUT).as_posix()
+                html = md_to_html(html, href)
             # 以檔名雜湊當 id：新增／刪除其他筆記時，舊連結與「上次讀到」仍指向同一篇
             nid = "n" + hashlib.md5(f"{group.name}/{f.name}".encode()).hexdigest()[:6]
             m = TITLE_RE.search(html)

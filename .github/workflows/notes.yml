@@ -1,13 +1,14 @@
-# 筆記自動發佈：notes_src/ 有變動就重建 notes/index.html 並推上 main（GitHub Pages 隨後更新）。
+# 筆記自動發佈：notes_src/ 或 agent/（AI Agent 工作守則 md）有變動就重建筆記頁並推上 main
+# （GitHub Pages 隨後更新）。
 # - 推到 main：直接重建。
-# - 推到 claude/** 分支（手機端 Claude Code 的工作分支）：只把該分支對 notes_src/ 的增刪改
+# - 推到 claude/** 分支（手機端 Claude Code 的工作分支）：只把該分支對 notes_src/、agent/ 的增刪改
 #   套用到 main 再重建，不需要開 PR／合併；分支上其他檔案的改動一律忽略。
 name: 發佈筆記
 
 on:
   push:
     branches: [main, "claude/**"]
-    paths: ["notes_src/**"]
+    paths: ["notes_src/**", "agent/**"]
   workflow_dispatch:
 
 permissions:
@@ -31,7 +32,7 @@ jobs:
         run: |
           git fetch origin "$GITHUB_REF_NAME"
           git -c core.quotepath=false diff --name-status --no-renames -z \
-              origin/main...FETCH_HEAD -- notes_src |
+              origin/main...FETCH_HEAD -- notes_src agent |
           while IFS= read -r -d '' st && IFS= read -r -d '' path; do
             if [ "$st" = "D" ]; then
               git rm -q --ignore-unmatch -- "$path"
@@ -49,7 +50,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           # 筆記類分頁（build_site.py 的 NOTE_PAGES）；不存在也未追蹤的路徑略過
-          git add -A -- notes_src $(for p in notes invest; do [ -e "$p" ] || git ls-files --error-unmatch "$p" >/dev/null 2>&1 && echo "$p"; done)
+          git add -A -- notes_src agent $(for p in notes invest; do [ -e "$p" ] || git ls-files --error-unmatch "$p" >/dev/null 2>&1 && echo "$p"; done)
           if git diff --cached --quiet; then
             echo "沒有需要發佈的變更"
           else
