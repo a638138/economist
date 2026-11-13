@@ -40,7 +40,7 @@
 
 ## AI Agent 工作守則（`agent/`）
 - 由 `notes_src/AI重點/` 五篇筆記整理出、給使用者的 coding agent 讀的規則。網站上顯示的就是 agent 讀的同一份，只有兩個檔：
-  - `agent/ai-agent-guide.md`：工作守則，每個 session 都讀。**核心規則保持 15 條以內**，只收模型預設不一定會做、而且有研究支持的規則；C++／GPU 規則放在標明「只在這類專案適用」的小節。
+  - `agent/ai-agent-guide.md`：工作守則，每個 session 都讀。**核心規則保持 15 條以內**，只收模型預設不一定會做的規則，沒有直接研究支持的要標「做法」；C++／GPU 規則放在標明「只在這類專案適用」的小節。
   - `agent/skills/agent-config-writing/SKILL.md`：撰寫 CLAUDE.md、SKILL.md、MCP 工具時才載入的 skill。
 - 使用者在電腦上執行 `python tools/install_agent_rules.py` 安裝到 `~/.claude`。
 - **改到 AI重點 筆記的結論或「對你的意義」時，同步更新這兩個檔**：規則用祈使句、一行一條、句尾標出依據章節（例如「（二-1）」），不放數字細節；更新檔頭的日期。改完提醒使用者在電腦上重跑安裝腳本。
