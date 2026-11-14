@@ -64,6 +64,7 @@ NOTE_LINKED = {"Agent 開發環境": [
     {"path": _AG / "skills" / "agent-config-writing" / "SKILL.md", "mode": "raw",
      "title": "Skill：agent-config-writing", "dest": ".claude/skills/agent-config-writing/SKILL.md",
      "desc": "撰寫 CLAUDE.md、SKILL.md、MCP 工具時才載入的 skill。"},
+    {"path": _AG / "skills" / "agent-config-writing" / "windows-traps.md", "mode": "md"},
     {"path": _AG / "agents" / "reviewer.md", "mode": "raw",
      "title": "子 agent：reviewer", "dest": ".claude/agents/reviewer.md",
      "desc": "只讀的獨立審查子 agent，守則「獨立審查」那條與 /review 用它。"},
