@@ -9,7 +9,7 @@
 <main>
 
 <h1>AI Agent 研究（一）：Skill 與說明檔</h1>
-<div class="meta">整理日期：2026 年 11 月 14 日 · 20 篇參考文獻 · 全文查核版（11 月 14 日補充 2 篇，標示<span class="new">新增</span>）</div>
+<div class="meta">整理日期：2026 年 11 月 14 日 · 22 篇參考文獻 · 全文查核版（11 月 14 日補充 4 篇，標示<span class="new">新增</span>）</div>
 
 <div class="lede">一句話總結：<b>skill 和說明檔平均有幫助，但很不穩定</b>。人工寫、少而精、註明適用條件的才有效；讓模型自己產生的 skill 或說明檔多半沒用甚至扣分，而且公開 skill 約四分之一有安全漏洞。說明檔的長度、規則放的位置影響不大，<b>一定要守的規則要靠 hook、lint 或 CI 強制</b>，不能只靠寫在檔案裡。</div>
 
@@ -22,6 +22,7 @@
 <li><b>有些任務反而變差</b>：87 個任務中有 13 個加了 skill 後變差。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
 <li><b>讓模型自己寫 skill 反而扣分</b>：三組專用 harness 上，自生成 skill 比不用 skill 低 8.1 到 11.5 個百分點。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
 <li><b>真實情境下效益大幅縮水</b>：當 agent 要從 34,198 個真實 skill 中自己檢索，Claude Opus 4.6 的增益從強制載入時的約 20 個百分點降到約 3 個；Kimi 與 Qwen 甚至低於不用 skill。每種設定跑 3 次，沒有信賴區間。<a class="src" href="https://arxiv.org/abs/2604.04323">Skills in the Wild 2026</a></li>
+<li><b>skill 越多，越常選錯或乾脆不用</b><span class="new">新增</span>：SkillsBench 上 38 組有 skill 能幫上忙的「任務與模型」配對（Haiku 4.5 與 Sonnet 4.6）、2,545 次執行。只載入有用的 skill 時通過率最高；把 skill 庫擴充到 52、102、202 個，通過率平均分別降 8、14、21 個百分點（202 個時 Haiku 降 26、Sonnet 降 15）。202 個時，只用到正確 skill 的執行從 88.0% 降到 52.6%，有 38.5% 的執行完全沒呼叫任何 skill。在 102 和 202 個時，「選錯或不選」造成的下降信賴區間不含零；上下文變長本身的影響點估計一直是正的（約 6 到 7 個百分點），但信賴區間太寬（約 −13 到 +25），作者的結論是與零無法區分，也說它可能真的存在、只是樣本不夠；在 Sonnet 上它的點估計反而比選錯還大，但兩者都不顯著。只有兩個 Anthropic 模型、一個 benchmark，最小的 skill 庫是 52 個；論文寫 2,545 次執行，表格各列加總是 2,576，差約 1%，不影響結論。<a class="src" href="https://arxiv.org/abs/2605.24050">More Skills, Worse Agents? 2026</a></li>
 <li><b>針對任務改寫 skill 能救回一部分</b>：Terminal-Bench 2.0 上，Claude Opus 4.6 從無 skill 的 57.7% 提升到 65.5%，但單靠檢索只有 61.4%，提升主要來自「針對該任務改寫」這一步，而且每題要多跑一次探索。<a class="src" href="https://arxiv.org/abs/2604.04323">Skills in the Wild 2026</a></li>
 <li><b>軟體工程 skill 大多沒差</b>：49 個公開的軟體工程 skill、約 565 個真實 repo 任務，39 個零提升，平均 +1.2%；token 用量從 −78% 到 +451%；7 個專門 skill 最高 +30%；3 個因版本不符最多 −10%。<a class="src" href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench 2026</a></li>
 <li><b>同一個 skill 換模型就可能變差</b>：9 組配置平均都提升（+4.6 到 +19.5 個百分點），但 36.78% 的任務在某些配置變好、在另一些變差。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026</a></li>
@@ -30,7 +31,7 @@
 <li><b>「有載入」不等於「有照做」</b>：79 個 skill、177 個任務、8 個模型、2 種 harness，最佳綜合分數只有 0.613（GPT-5.5 搭 Claude Code）。觸發率 97% 的配置，照做程度仍只有 0.625；綜合分數低於約 0.5 時，任務表現就低於不用 skill。<a class="src" href="https://arxiv.org/abs/2608.04828">Skill-Use 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>skill 值得用在「agent 自己查不到、而且你反覆在做」的流程，例如 SDK 的特定呼叫順序或量測步驟。通用的程式寫法 skill 多半沒效益。新增 skill 後，用幾個真實任務比較有無 skill 的結果，再決定要不要留。</p>
+<p>skill 值得用在「agent 自己查不到、而且你反覆在做」的流程，例如 SDK 的特定呼叫順序或量測步驟。通用的程式寫法 skill 多半沒效益。新增 skill 後，用幾個真實任務比較有無 skill 的結果，再決定要不要留。<span class="new">更新</span>裝的 skill 越多，agent 越容易選錯或乾脆不用（研究測的是 52 個以上，只裝幾個到十幾個時影響多大還不清楚）：只留常用的，用不到的移除；description 寫明何時使用，和相近的 skill 怎麼區分（這一點是整理者的推論，論文沒有實驗）。</p>
 </section>
 
 <section>
@@ -74,7 +75,8 @@
 <li><b>約四分之一的公開 skill 有漏洞</b>：31,132 個 skill 中 26.1% 至少有一個漏洞（作者估計真實範圍 23% 到 30%）；附帶腳本的 skill 有漏洞的機率是純指令型的 2.12 倍。偵測工具在 200 個人工標註樣本上精確率 86.7%、召回率 82.5%。<a class="src" href="https://arxiv.org/abs/2601.10338">Skills in the Wild 安全 2026</a></li>
 <li><b>憑證最常從輸出外洩</b>：17,022 個 skill 中 3.1% 有憑證外洩問題；73.5% 的漏洞來自把憑證 print 或寫進 log，而 agent 會把這些輸出讀進 context。經實際執行確認，89.6% 可在不提權的情況下利用。<a class="src" href="https://arxiv.org/abs/2604.03070">Chen 等 2026</a></li>
 <li><b>確實有惡意 skill</b>：98,380 個 skill 中確認 157 個惡意（0.16%），70.1% 是竊取資料型；其中 54.1% 來自同一個發布者。揭露後全部下架。作者指出 157 是下限。<a class="src" href="https://arxiv.org/abs/2602.06547">Malicious Agent Skills 2026</a></li>
-<li><b>AI 仍會推薦不存在的套件</b>：2026 年 5 個模型、約 20 萬次生成，推薦不存在套件的比例 4.62% 到 6.10%；5 個模型都會幻覺出的 127 個名稱中，53 個仍可被搶註。單一作者的預印本，未測 agent 情境。<a class="src" href="https://arxiv.org/abs/2605.17062">Churilov 2026</a></li>
+<li><b>套件幻覺很普遍，而且會重複出現</b><span class="new">新增</span>：16 個模型（2024 年初的模型）、57.6 萬段 Python 與 JavaScript 程式，推薦的套件中 19.7% 不存在；商用模型 5.2%、開源模型 21.7%，最低的 GPT-4 Turbo 也有 3.59%。抽 500 個出現幻覺的提示各重問 10 次，58% 的幻覺名稱會再出現，所以攻擊者可以預先搶註；但 81% 的幻覺名稱只出現在一個模型。問到最近一年才流行的套件時，幻覺更多。4 個模型中有 3 個事後自我檢查，能認出 75% 以上自己的幻覺。限制：19.7% 有一部分來自直接問模型「需要哪些套件」，不只是從程式碼解析；開源模型用的是量化版；重問與自我檢查只測 4 個模型、只測 Python；沒有測 agent 情境。<a class="src" href="https://arxiv.org/abs/2406.10279">Spracklen 等 2025</a></li>
+<li><b>2026 年的模型仍會推薦不存在的套件</b>：重現研究，5 個模型、約 20 萬次生成，推薦不存在套件的比例 4.62% 到 6.10%；5 個模型都會幻覺出的 127 個名稱中，53 個仍可被搶註。單一作者的預印本，未測 agent 情境。<a class="src" href="https://arxiv.org/abs/2605.17062">Churilov 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
 <p>不要直接裝來路不明的 skill，尤其附腳本的；裝之前先讀過腳本。自己寫的 skill 不要 print 金鑰。agent 建議新增的相依套件，先確認名稱真的存在、是你要的那個。</p>
@@ -86,6 +88,7 @@
 <ol>
 <li><a href="https://arxiv.org/abs/2602.12670">SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks</a>，Li 等，NeurIPS 2026（正式發表，讀過全文，依 2026 年 6 月 v4）</li>
 <li><a href="https://arxiv.org/abs/2604.04323">How Well Do Agentic Skills Work in the Wild</a>，arXiv 2026 年 4 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2605.24050">More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries</a>，Song、Wei，Databricks，arXiv 2026 年 6 月 v2（預印本，讀過全文）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?</a>，Han 等，arXiv 2026 年 3 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2610.08875">An Empirical Study of Agent Skills' Downstream Utility</a>，arXiv 2026 年 10 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2608.04828">Skill-Use: Can LLMs Actually Use Skills in Agentic Harnesses?</a>，arXiv 2026 年 8 月（預印本，部分章節未讀到）</li>
@@ -103,6 +106,7 @@
 <li><a href="https://arxiv.org/abs/2601.10338">Agent Skills in the Wild: An Empirical Study of Security Vulnerabilities at Scale</a>，arXiv 2026 年 1 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2604.03070">How Your Credentials Are Leaked by LLM Agent Skills: An Empirical Study</a>，Chen 等，ASE 2026（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2602.06547">"Do Not Mention This to the User": Detecting and Understanding Malicious Agent Skills in the Wild</a>，USENIX Security 2026（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2406.10279">We Have a Package for You! A Comprehensive Analysis of Package Hallucinations by Code Generating LLMs</a>，Spracklen 等，USENIX Security 2025（正式發表，讀過全文）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2605.17062">The Range Shrinks, the Threat Remains</a>，Churilov，arXiv 2026 年 5 月（預印本，讀過全文）</li>
 </ol>
 </section>

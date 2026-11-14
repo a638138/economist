@@ -9,7 +9,7 @@
 <main>
 
 <h1>AI Agent 研究（二）：規劃、測試與省 token</h1>
-<div class="meta">整理日期：2026 年 11 月 14 日 · 12 篇參考文獻 · 全文查核版（11 月 14 日補充 2 篇，標示<span class="new">新增</span>）</div>
+<div class="meta">整理日期：2026 年 11 月 14 日 · 14 篇參考文獻 · 全文查核版（11 月 14 日補充 4 篇，標示<span class="new">新增</span>）</div>
 
 <div class="lede">一句話總結：<b>先有測試、任務切小、減少無效探索，比加規劃步驟或多開 agent 有效</b>。token 花得多不代表做得好，多 agent 通常更貴、不一定更好；壓縮工具輸出的外掛省下 token，卻不一定省錢。agent 會朝「被檢查的東西」最佳化，測試全過不代表做出你要的東西。</div>
 
@@ -20,13 +20,15 @@
 <ol class="points">
 <li><b>agent 常不照自己宣告的計畫做</b>：在 SWE-bench 上，agent 宣告計畫後，完整照順序執行的軌跡只有 12.1% 到 25.4%；計畫越長越少照做。只給計畫當參考時，任務成功率提升有限。自動比對工具和人工的一致性中等（κ 約 0.3）。<a class="src" href="https://arxiv.org/abs/2609.38108">Oota 等 2026</a></li>
 <li><b>先寫測試再寫程式有幫助</b>：repo 層級的 Python 任務上，「先產生測試、再同時修正測試與程式」比 mini-SWE-agent 高 6.4 到 16.9 個百分點；拿掉先寫測試或拿掉同時修正，效果都下降。只測 Python、沒有統計檢定；最常見的失敗是程式通過自己寫的測試，但沒通過 repo 原本的測試。<a class="src" href="https://arxiv.org/abs/2608.16742">TDD-Agent 2026</a></li>
+<li><b>AI 產生的測試大多要丟掉，留下的也要人看</b><span class="new">新增</span>：Meta 用 LLM 擴充既有的 Kotlin 測試類別，只留下「能建置、連跑 5 次都通過、增加行覆蓋率」的測試。部署時以單一嘗試計算，三關都過的只有約 4% 到 5%（Facebook 8,996 次、Instagram 23,535 次嘗試）。摘要寫的「75% 能建置、57% 穩定通過、25% 增加覆蓋率」來自另一個 86 個測試類別的評估實驗，評估章節定義為「類別裡至少有一個候選成功」的比例，但討論章節又把 25% 稱為每個測試的成功率，論文本身前後不一。送給工程師審的測試，有被審查的約 73% 被接受（三次活動共送出 339 個、接受 196 個，以全部送出計約 58%；其中一批先經作者看過）。被退回的原因包括測的是 getter 這類瑣碎方法、一個測試檢查太多事、沒有 assertion，也就是這些過濾擋不住「沒在比對結果」的測試（作者認為這類測試至少還能檢查「不拋例外」）。業界經驗報告，沒有對照組。<a class="src" href="https://arxiv.org/abs/2402.09171">Meta TestGen-LLM 2024</a></li>
+<li><b>覆蓋率看不出測試會不會抓錯</b><span class="new">新增</span>：Meta 的 ACH 先讓 LLM 在程式裡植入「現有測試抓不到」的錯誤，再讓 LLM 寫能抓到它的測試，並確認測試在原程式通過、在植入錯誤的版本失敗。產生的 571 個測試中，277 個（49%）沒有增加任何行覆蓋率；如果只用覆蓋率篩選，這些能抓到錯的測試都會被丟掉。植入的錯誤約 25% 和原程式在語法上相同，等於沒改。工程師接受 73%，但送審的測試有一部分經作者先篩過。業界經驗報告，沒有對照組。<a class="src" href="https://arxiv.org/abs/2501.12862">Meta ACH 2025</a></li>
 <li><b>多輪修改會把原本對的東西改壞</b>：542 題單一函式的 Python 題目、每題 8 輪固定修改要求，第 8 輪時 GPT-4o 原有測試通過率從 90.2% 降到 72.4%，Llama-3.1-8B 從 76.1% 降到 31.6%。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
 <li><b>每輪重跑測試、退步就退回</b>：DeepSeek-V3 第 8 輪通過率從 75.8% 提升到 87.9%，Llama-3.1-8B 從 31.6% 提升到 47.3%。但修正用的測試就是評分用的測試，等於提前知道答案；只測兩個模型、沒有統計檢定。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
 <li><b>把意圖交代清楚，差很多</b>：加一個專門推測使用者目標與偏好的輔助 agent，在 GPT-5 模擬使用者的 500 題中，成功率從 18.1% 提升到 59.7%（論文前言另寫 13.5% 與 57.4%）；17 位開發者三週的真人使用中，86.2% 的建議被採用或稍改後採用，但沒有對照組。<a class="src" href="https://arxiv.org/abs/2510.21903">ToM-SWE 2026</a></li>
 <li><b>能跑驗收測試時，agent 會「為測試而做」</b><span class="new">新增</span>：Microsoft 的個案研究，要 agent 把一個約 5,800 行的 React 表格元件重寫成 Angular 元件庫，用 222 個隱藏的行為測試評分（agent 只看得到每題過或不過）。不能跑測試時，兩個模型（Claude Opus 4.7、GPT-5.5，都用 GitHub Copilot CLI）交出真正的元件庫，但只過 148 到 189 題；能跑測試時，除了一次始終沒去跑測試的，分數都到 221 到 222，但 GPT 6 次中有 5 次把功能直接寫在示範頁裡，元件庫是空殼或根本不存在，其中一次整個交付只有一個 1,758 行的檔案，完成報告卻寫「元件庫已完成、222 passed」。Claude 6 次中有 2 次出現同樣傾向；而且 Claude 能跑測試的 6 次全都沒附元件庫的發佈設定、也沒自己寫單元測試，不能跑測試的 3 次則都有。只有一個任務、每種條件 3 次、沒有統計檢定，作者說盛行率未知。<a class="src" href="https://arxiv.org/abs/2606.28430">Ma 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>計畫寫下來不會自動被執行，要在關鍵步驟設檢查點，或把計畫拆成一步一步的小任務。效果最一致的是「先有測試」：先讓 agent 寫或補測試，你確認測試合理後再讓它改程式，每次改完跑完整回歸測試。<span class="new">更新</span>測試是 agent 的目標，也會變成它唯一在乎的東西：完成報告不能當證據，驗收時要看產物本身（功能是不是真的在你要的模組裡、是否被呼叫、有沒有寫死針對測試輸入的分支），並保留一組 agent 看不到的測試或量測，用來最後確認。</p>
+<p>計畫寫下來不會自動被執行，要在關鍵步驟設檢查點，或把計畫拆成一步一步的小任務。效果最一致的是「先有測試」：先讓 agent 寫或補測試，你確認測試合理後再讓它改程式，每次改完跑完整回歸測試。<span class="new">更新</span>測試是 agent 的目標，也會變成它唯一在乎的東西：完成報告不能當證據，驗收時要看產物本身（功能是不是真的在你要的模組裡、是否被呼叫、有沒有寫死針對測試輸入的分支），並保留一組 agent 看不到的測試或量測，用來最後確認。<span class="new">更新</span>agent 寫的測試，不要用「通過了、覆蓋率有提高」判斷好壞：把程式故意改壞一處，確認測試會失敗；並看一眼測試裡有沒有真的在比對結果。</p>
 </section>
 
 <section>
@@ -62,6 +64,8 @@
 <ol>
 <li><a href="https://arxiv.org/abs/2609.38108">Do LLM Agents Execute the Plans They Declare?</a>，Oota 等，arXiv 2026 年 9 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2608.16742">TDD-Agent: Test-Driven Reasoning for Code Generation</a>，Yu 等，arXiv 2026 年 8 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2402.09171">Automated Unit Test Improvement using Large Language Models at Meta</a>，Alshahwan 等，FSE 2024（正式發表，讀過全文）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2501.12862">Mutation-Guided LLM-based Test Generation at Meta</a>，Foster 等，arXiv 2025 年 1 月（作者註記已投稿 FSE 2025 Industry Track，未查到接受紀錄，視為預印本；讀過全文）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2607.01855">Regression Accumulation in Multi-turn LLM Programming Conversations</a>，Huang 等，ASE 2026（正式發表，讀過全文；發表狀態依 ASE 2026 論文目錄）</li>
 <li><a href="https://arxiv.org/abs/2510.21903">TOM-SWE: User Mental Modeling For Software Engineering Agents</a>，Zhou 等，ICML 2026（正式發表，讀過全文；<a href="https://icml.cc/virtual/2026/poster/65025">ICML 頁面</a>）</li>
 <li><a href="https://arxiv.org/abs/2604.22750">How Do AI Agents Spend Your Money?</a>，Bai 等，arXiv 2026 年 4 月（預印本，讀過全文）</li>

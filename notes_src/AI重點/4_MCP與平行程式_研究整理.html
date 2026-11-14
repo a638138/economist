@@ -9,7 +9,7 @@
 <main>
 
 <h1>AI Agent 研究（四）：MCP 與平行程式</h1>
-<div class="meta">整理日期：2026 年 11 月 14 日 · 12 篇參考文獻 · 全文查核版（11 月 14 日補充 2 篇，標示<span class="new">新增</span>）</div>
+<div class="meta">整理日期：2026 年 11 月 14 日 · 14 篇參考文獻 · 全文查核版（11 月 14 日補充 4 篇，標示<span class="new">新增</span>）</div>
 
 <div class="lede">一句話總結：<b>接上工具不代表會用，平行程式也不會自動調好</b>。工具描述與介面設計影響很大；效能來自「正確性檢查加 profiling」的迴路，而且要防 agent 偷改條件、漏掉同步。</div>
 
@@ -32,7 +32,9 @@
 <ol class="points">
 <li><b>平行程式比循序程式難很多</b>：420 題、7 種執行模型，GPT-4 循序程式 pass@1 約 76%，平行程式平均只有 37.8%；OpenMP 約 60% 最好，MPI 約 23% 最差。寫對的程式也常常很慢，平行效率最高只有 0.13。<a class="src" href="https://arxiv.org/abs/2401.12554">ParEval 2024</a></li>
 <li><b>整個專案的轉換幾乎都失敗</b>：6 個 HPC 應用程式在 CUDA、OpenMP Offload、Kokkos 之間轉換，除了最小的範例外，沒有任何方法與模型組合成功。主要失敗是 CMake 與 Makefile、跨檔案介面不一致。<a class="src" href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo 2025</a></li>
+<li><b>只轉 kernel 時：方向很重要，重試救不回來</b><span class="new">新增</span>：35 個 kernel 在 CUDA、OpenMP、OpenCL 之間的 142 個轉換任務（含 4 個 OpenMP target 的案例方向），建置與驗證固定、只轉 kernel，每題 3 次、單次生成不修正。GPT-5.4 與 GPT-5.3-codex 的 pass@1 都是 62.7%，Qwen 3.5 是 23.9%。拿掉平行結構（CUDA 轉 OpenMP）比加上去（例如 OpenCL 轉 CUDA，要補上明確的同步與記憶體管理）容易得多。兩個 GPT 模型約 30% 的任務 3 次全錯，失敗多是系統性的（例如 OpenMP 版本裡留著 CUDA 的識別字），重抽樣救不回來；Qwen 另有 4.6% 能編譯執行、結果卻錯。程式做語意不變的改寫後，GPT 模型的通過率維持在 85% 到 91%，Qwen 從 74% 降到 56% 但未達顯著；這只算原本至少做對一次的題目，作者提醒有倖存者偏誤，不能和上面的 62.7% 直接比。87 個題目設定中 80 個只檢查輸出字樣與結束碼，「通過」不等於數值正確；只在一個平台（RTX 4070）測。<a class="src" href="https://arxiv.org/abs/2607.22588">ParBench 2026</a></li>
 <li><b>執行與 profiling 回饋能大幅提升</b>：GPU kernel 基準 250 題，DeepSeek R1 一次產生時比 PyTorch 快的比例 Level 1 為 12%、Level 2 為 36%；加上 10 輪執行結果與 profiler 回饋後提升到 43% 與 72%。正確性只用 5 組隨機輸入檢查。<a class="src" href="https://arxiv.org/abs/2502.10517">KernelBench 2025</a></li>
+<li><b>profiler 數據要先解讀再給模型</b><span class="new">新增</span>：AWS 的 KernelPro 在 42 個 KernelBench 題目上做消融（Sonnet 4.6、A100；每題 15 個獨立搜尋，各 30 輪、每輪 2 個候選，取最好的結果，極端值有截斷）。只給約 50 個 ncu 原始計數器時，幾何平均加速 1.77 倍，比完全不給 profiler 回饋的 3.35 倍還差（p = 0.0007），雖然解出的題數較多（36 對 32 題）；在原始計數器之外，再附上工具算出的瓶頸判斷與具體建議（例如「每執行緒 168 個暫存器，溢出到 local memory」），提升到 4.00 倍。作者的解釋是模型會去最佳化不影響實際時間的計數器。完整系統在 KernelBench 三個等級的幾何平均加速 2.42、4.69、5.30 倍（相對 PyTorch eager）。業界預印本，只用一個模型；取多次搜尋中最好的結果，數字偏樂觀；正確性只用 allclose（絕對誤差 1e-2、相對誤差 1e-3）判定；沒有限制的章節。<a class="src" href="https://arxiv.org/abs/2606.26453">KernelPro 2026</a></li>
 <li><b>正確性檢查加 profiling 的流程穩定有效</b>：把 Codex 改成「找熱點、規劃資料搬移、正確性檢查、依 profiling 修改」的流程轉成 OpenMP GPU offload，31 個有效 kernel 全部正確、27 個比參考實作快或持平；HeCBench 幾何平均 3.1 倍（A100）與 3.6 倍（RTX 4060），不加流程的同一模型只有 2.0 倍與 2.4 倍，Rodinia 甚至變慢（0.30 倍）。token 只多約 11%。沒有拆開測各步驟的貢獻。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
 <li><b>agent 會偷懶</b>：上述研究被排除的 kernel 中，有 2 個是 agent 把主要運算留在 CPU 上。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
 <li><b>專門訓練的模型可以超越通用模型，但你用不到</b>：用強化學習專門訓練的 CUDA agent，在 KernelBench 上 96.8% 的題目比 torch.compile 快；同一流程下 Claude Opus 4.5 只有 66.4%。每種設定只跑一次，且挑最佳解時用了評分指標本身。<a class="src" href="https://arxiv.org/abs/2602.24286">CUDA Agent 2026</a></li>
@@ -42,7 +44,7 @@
 <li><b>移植手動最佳化過的 C++ 到 CUDA：有時先「去最佳化」比較好</b><span class="new">新增</span>：12 個為 Arm CPU 手動最佳化（NEON SIMD、分塊、預先打包）的 HPC kernel，比較「直接轉 CUDA 再最佳化」與「先讓模型移除 CPU 專屬最佳化、再轉 CUDA 再最佳化」，各 50 次。單次流程下 18 組可檢定的比較中，5 組先去最佳化較快、3 組直接轉較快（校正多重比較後）；最明顯的是卷積，Qwen3-235B 直接轉只有 12% 成功、去最佳化後 96%，成功版本的效能中位數 106 對 4,366 GFlops。但去最佳化多一次呼叫，拿同樣呼叫次數重試直接轉的對照組時，只剩 4 組領先；加上反覆生成與修正後，兩種做法的差距大多縮小。用的是 gpt-oss-120b 與 Qwen3-235B，不是最新的前沿模型；正確性只在測試尺寸下驗證。<a class="src" href="https://arxiv.org/abs/2606.06063">Mukunoki 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>新模型不會自動把平行程式調好，效能來自你搭的迴路：固定的參考答案與容許誤差、固定問題大小的量測腳本、profiler 輸出、以及「運算確實在 GPU 上、執行緒同步正確」的檢查。即時系統的時序與同步錯誤，一般測試很難抓到，要另外設計壓力測試或用 sanitizer。建置系統的修改由你把關。<span class="new">更新</span>沒有執行回饋時，CUDA 改寫大約六成是錯的，所以一定要讓 agent 能自己編譯、執行、比對結果，再談效能。平行化前先量 kernel 時間：只有幾毫秒以下的，開執行緒或搬到 GPU 可能得不償失。把已經為 CPU 手調過（SIMD intrinsics、分塊）的程式移到 GPU 時，如果直接轉一直失敗，可以先請 agent 寫出一個乾淨、未最佳化、結果相同的參考版本，再從那裡轉 CUDA；但這不是預設做法，直接轉能成功時不一定比較差。</p>
+<p>新模型不會自動把平行程式調好，效能來自你搭的迴路：固定的參考答案與容許誤差、固定問題大小的量測腳本、profiler 輸出、以及「運算確實在 GPU 上、執行緒同步正確」的檢查。即時系統的時序與同步錯誤，一般測試很難抓到，要另外設計壓力測試或用 sanitizer。建置系統的修改由你把關。<span class="new">更新</span>沒有執行回饋時，CUDA 改寫大約六成是錯的，所以一定要讓 agent 能自己編譯、執行、比對結果，再談效能。平行化前先量 kernel 時間：只有幾毫秒以下的，開執行緒或搬到 GPU 可能得不償失。把已經為 CPU 手調過（SIMD intrinsics、分塊）的程式移到 GPU 時，如果直接轉一直失敗，可以先請 agent 寫出一個乾淨、未最佳化、結果相同的參考版本，再從那裡轉 CUDA；但這不是預設做法，直接轉能成功時不一定比較差。讓 agent 用 profiler 時，請它先判斷瓶頸類型（記憶體或運算受限）並附上解讀，不要只丟原始計數器給它。轉成 CUDA 這種要補上同步與記憶體管理的方向特別容易錯；ParBench 顯示單純重抽樣救不回來，失敗時要給它編譯錯誤和比對結果去修（有回饋的效果見上方 KernelBench）。</p>
 </section>
 
 <section>
@@ -56,6 +58,8 @@
 <li><a href="https://arxiv.org/abs/2401.12554">Can Large Language Models Write Parallel Code?（ParEval）</a>，Nichols 等，HPDC 2024（正式發表，讀過全文）</li>
 <li><a href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo: A Benchmark Suite for Evaluating LLMs with Repository-level HPC Translation Tasks</a>，Davis 等，ICPP 2025（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2502.10517">KernelBench: Can LLMs Write Efficient GPU Kernels?</a>，Ouyang 等，ICML 2025（正式發表，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2606.26453">Optimizing CUDA like a Human: Micro-Profiling Tools as Expert Surrogates for LLM-Based GPU Kernel Optimization（KernelPro）</a>，Gai、Zhang 等，AWS，arXiv 2026 年 8 月 v2（預印本，讀過全文）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2607.22588">ParBench: A Benchmark for Reliable Evaluation of LLM Parallel Code Translation</a>，Jhaveri 等，arXiv 2026 年 6 月（預印本，正文讀過全文，附錄部分未讀）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2601.04327">ParaCodex: A Profiling-Guided Autonomous Coding Agent for Reliable Parallel Code Generation and Translation</a>，Kaplan 等，ACL 2026（正式發表，讀過全文；<a href="https://aclanthology.org/2026.acl-long.732/">ACL 頁面</a>）</li>
 <li><a href="https://arxiv.org/abs/2602.24286">CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation</a>，Dai 等，arXiv 2026 年 2 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2611.02752">HPC-Bench: A Comprehensive Benchmark for High Performance Computing Codes</a>，Cui 等，NeurIPS 2026 Evaluations &amp; Datasets Track（已接受，讀過全文，部分附錄未讀到）<span class="new">新增</span></li>
