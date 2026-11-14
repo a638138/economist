@@ -20,6 +20,7 @@
 - 指令 /handoff：https://a638138.github.io/economist/agent/commands/handoff.md → `.claude/commands/handoff.md`
 - skill agent-config-writing：https://a638138.github.io/economist/agent/skills/agent-config-writing/SKILL.md → `.claude/skills/agent-config-writing/SKILL.md`
 - skill 附檔（靜默陷阱檢查清單）：https://a638138.github.io/economist/agent/skills/agent-config-writing/windows-traps.md → `.claude/skills/agent-config-writing/windows-traps.md`
+- skill 附檔（hook 的寫法與測試）：https://a638138.github.io/economist/agent/skills/agent-config-writing/guard-hooks.md → `.claude/skills/agent-config-writing/guard-hooks.md`
 
 ## 給 agent 的步驟
 
@@ -28,7 +29,7 @@
 3. 目標位置已有同名檔案時，先比較差異；內容不同就列出差異，問使用者要覆蓋、保留還是合併。
 4. 專案根目錄的 CLAUDE.md：沒有就建立。在檔案最前面加一行 `@.claude/ai-agent-guide.md` 引用守則（已有就不重複加），原有內容一律保留。
 5. 用 agent-config-writing skill 的原則，幫使用者補上 CLAUDE.md 的專案專屬內容：先讀專案找出能查到的，查不到的再問使用者。必要項目：建置與測試指令；目前已知會失敗的測試，**註明在哪台機器或哪個環境**（守則規定要列在這裡）；硬體與即時限制；不可違反的規則及原因；**違反了也不會報錯的環境陷阱**（例如編碼、換行、建置快取、會靜默退回的設定），在 CLAUDE.md 裡緊接在 `@.claude/ai-agent-guide.md` 那一行之後獨立成一節。這一類要主動查、主動問使用者，因為從程式碼看不出來；專案在 Windows 上開發、建置或執行時（非英文語系尤其要做），照 `windows-traps.md` 逐項檢查。不要寫架構介紹或目錄說明。
-6. 對使用者列出的不可違反規則，提出能機械檢查的做法（hook、lint 規則、編譯期檢查、CI 測試），由使用者決定要做哪些；不要擅自安裝 hook。優先替「違反了也不會報錯」那一節的項目提機械檢查，`windows-traps.md` 每項都附了可用的哨兵測試。
+6. 對使用者列出的不可違反規則，提出能機械檢查的做法（hook、lint 規則、編譯期檢查、CI 測試），由使用者決定要做哪些；不要擅自安裝 hook。優先替「違反了也不會報錯」那一節的項目提機械檢查，`windows-traps.md` 每項都附了可用的哨兵測試。使用者要做 hook 時，照 `guard-hooks.md` 的範本與測試方法：hook 和它的測試先寫好，第 1、3 層測試全過；第 2 層的沙盒實跑會花費用，先問使用者；經使用者同意才寫進 settings 啟用。
 7. 不是 C++／GPU／即時系統的專案，守則裡那一節本來就標明不適用，不要刪改守則檔。
 8. 看一次版本控制狀態，把這些檔案作為一個提交：「建立 agent 開發環境」。
 9. 回報：裝了哪些檔、在哪裡、有沒有覆蓋或跳過既有檔案、CLAUDE.md 還缺哪些需要使用者補的內容。並提醒使用者：新的指令與子 agent 在下一個 session 才會生效。

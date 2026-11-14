@@ -5,13 +5,14 @@ description: 撰寫或修改給 AI agent 讀的設定與工具時使用：CLAUDE
 
 # AI Agent skill：撰寫設定檔與工具
 
-撰寫 CLAUDE.md、SKILL.md 或 MCP 工具時才載入的 skill，依實證研究整理。整理日期：2026 年 11 月 14 日。
+撰寫 CLAUDE.md、SKILL.md 或 MCP 工具時才載入的 skill，依實證研究整理。整理日期：2026 年 11 月 15 日。
 證據見 https://a638138.github.io/economist/notes/ 「AI Agent 研究（一）、（四）」，其中 skill 的研究多數是預印本；非英文 Windows 陷阱與機械檢查例子來自專案經驗，見「AI Agent 研究（五）」第五節。
 
 ## 最重要：寫進檔案的規則只會被部分遵守
 
 - 簡單規則的遵守率約五成五到七成，agent 寫的程式越多越容易漏。
 - 「違反就會出事」的規則，除了寫進檔案，一定要同時提出機械檢查：hook、lint 規則、static_assert 等編譯期檢查、CI 測試。檔案負責說明原因，檢查負責確保做到。
+- 要做 hook 或事後檢查時，先讀同資料夾的 `guard-hooks.md`（範本、hook 靜默失效的陷阱、四層測試）；hook 與測試寫好、測過，經使用者同意才啟用。
 - 例：建置腳本在任何目標檔沒有記到標頭相依時直接失敗；測試用純文字比對 C 介面與各語言綁定，有函式沒綁就失敗；測試讀韌體原始碼裡的常數，跟主機端的表比對；測試從原始碼掃出舊版 Python 不支援的語法。
 
 ## CLAUDE.md／AGENTS.md
