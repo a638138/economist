@@ -19,12 +19,12 @@
 <h2><span class="no">一</span>MCP 與工具設計</h2>
 <ol class="points">
 <li><b>接上工具不代表會用</b>：36 個真實 MCP server、1,000 個任務、20 個模型，最佳通過率 82.2%。約 6,900 個失敗中，63.3% 是理解、整合或太早停止，只有 36.7% 和工具有關（不用工具 10.5%、錯誤後無法恢復 10.3%、選錯工具 9.0%、參數錯誤 6.9%）。評分用 LLM 評審，不同評審差 2 到 5 個百分點。<a class="src" href="https://arxiv.org/abs/2602.00933">MCP-Atlas 2026</a></li>
-<li><b>工具描述幾乎都寫得不好</b>：103 個 MCP server、856 個工具中，97.1% 的描述至少有一個缺陷；89.8% 沒寫限制、89.3% 沒寫使用時機。補齊描述後任務成功率中位數 +5.85 個百分點，但執行步數 +67%。只有一個模型做了配對比較（p = 0.02）。<a class="src" href="https://arxiv.org/abs/2602.14878">Hasan 等 2026</a></li>
+<li><b>工具描述幾乎都寫得不好</b>：103 個 MCP server、856 個工具中，97.1% 的描述至少有一個缺陷；89.8% 沒寫限制、89.3% 沒寫使用時機。補齊描述後任務成功率中位數 +5.85 個百分點，但執行步數 +67%。只有一個模型做了配對比較（p = 0.02）。<span class="new">更新</span>另外 3 個模型「補齊前」的數字取自原 benchmark 論文，不是同一環境重跑；唯一做配對比較的模型只補了用途、使用時機與限制三項；24 組模型與領域中有 16.67% 反而變差。只保留重點的精簡描述（例如拿掉範例）與完整版沒有顯著差異。另一個實驗用原始碼核對、讓描述更正確，重跑 92 題反而少解 9 題（26 對 35，p = 0.064，不顯著）；作者推測這些工具包的是 Yahoo Finance、GitHub 這類模型本來就熟的服務，對少見或自家的工具描述品質可能更重要，但沒有測過。描述的評分由 3 個 LLM 打分，抽 90 個工具人工驗證，一致性 κ 0.72 到 0.89。<a class="src" href="https://arxiv.org/abs/2602.14878">Hasan 等 2026</a></li>
 <li><b>專有工具做成 MCP server 的實例</b>：把嵌入式硬體設計工具做成 14 個 MCP 工具，7 個本地開源模型中最強的完成 99% 的預期呼叫；工具描述精簡後，每個模型的工具失敗率都上升，多數約加倍；加入範例反而讓部分模型停止動作。沒有統計檢定，benchmark 未公開。<a class="src" href="https://arxiv.org/abs/2608.26199">Liparulo、Pierri 2026</a></li>
 <li><b>工具介面設計影響很大</b>：同一模型下，專為 agent 設計的介面比只給 shell 高 64%（相對值）。拿掉編輯時的語法檢查掉 3 個百分點；搜尋結果一次只給一筆，比完全不給搜尋工具還差；檔案檢視視窗 100 行最好，30 行或整個檔案都變差。<a class="src" href="https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html">SWE-agent 2024</a></li>
 </ol>
 <h3>對你的意義</h3>
-<p>如果要把自己的量測 SDK 包成 MCP server，工具描述要寫清楚用途、使用時機、限制與參數單位；輸出要精簡、摘要好，不要一次倒出整段原始資料。工具數量少而清楚，比多而模糊好。</p>
+<p>如果要把自己的量測 SDK 包成 MCP server，工具描述要寫清楚用途、使用時機、限制與參數單位；輸出要精簡、摘要好，不要一次倒出整段原始資料。工具數量少而清楚，比多而模糊好。<span class="new">更新</span>描述寫重點就好，範例不是必要；模型沒看過的自家工具，限制與參數單位可能更要寫清楚（這是作者的推測，沒有實驗）。</p>
 </section>
 
 <section>
@@ -32,7 +32,7 @@
 <ol class="points">
 <li><b>平行程式比循序程式難很多</b>：420 題、7 種執行模型，GPT-4 循序程式 pass@1 約 76%，平行程式平均只有 37.8%；OpenMP 約 60% 最好，MPI 約 23% 最差。寫對的程式也常常很慢，平行效率最高只有 0.13。<a class="src" href="https://arxiv.org/abs/2401.12554">ParEval 2024</a></li>
 <li><b>整個專案的轉換幾乎都失敗</b>：6 個 HPC 應用程式在 CUDA、OpenMP Offload、Kokkos 之間轉換，除了最小的範例外，沒有任何方法與模型組合成功。主要失敗是 CMake 與 Makefile、跨檔案介面不一致。<a class="src" href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo 2025</a></li>
-<li><b>只轉 kernel 時：方向很重要，重試救不回來</b><span class="new">新增</span>：35 個 kernel 在 CUDA、OpenMP、OpenCL 之間的 142 個轉換任務（含 4 個 OpenMP target 的案例方向），建置與驗證固定、只轉 kernel，每題 3 次、單次生成不修正。GPT-5.4 與 GPT-5.3-codex 的 pass@1 都是 62.7%，Qwen 3.5 是 23.9%。拿掉平行結構（CUDA 轉 OpenMP）比加上去（例如 OpenCL 轉 CUDA，要補上明確的同步與記憶體管理）容易得多。兩個 GPT 模型約 30% 的任務 3 次全錯，失敗多是系統性的（例如 OpenMP 版本裡留著 CUDA 的識別字），重抽樣救不回來；Qwen 另有 4.6% 能編譯執行、結果卻錯。程式做語意不變的改寫後，GPT 模型的通過率維持在 85% 到 91%，Qwen 從 74% 降到 56% 但未達顯著；這只算原本至少做對一次的題目，作者提醒有倖存者偏誤，不能和上面的 62.7% 直接比。87 個題目設定中 80 個只檢查輸出字樣與結束碼，「通過」不等於數值正確；只在一個平台（RTX 4070）測。<a class="src" href="https://arxiv.org/abs/2607.22588">ParBench 2026</a></li>
+<li><b>只轉 kernel 時：方向很重要，重試救不回來</b><span class="new">新增</span>：35 個 kernel 在 CUDA、OpenMP、OpenCL 之間的 142 個轉換任務（含 4 個 OpenMP target 的案例方向），建置與驗證固定、只轉 kernel，每題 3 次、單次生成不修正。GPT-5.4 與 GPT-5.3-codex 的 pass@1 都是 62.7%，Qwen 3.5 是 23.9%（兩家的取樣設定不同，差距不能全歸於模型能力）。拿掉平行結構（CUDA 轉 OpenMP）比加上去（例如 OpenCL 轉 CUDA，要補上明確的同步與記憶體管理）容易得多。兩個 GPT 模型約 30% 的任務 3 次全錯，失敗多是系統性的（例如 OpenMP 版本裡留著 CUDA 的識別字），重抽樣救不回來；Qwen 另有 4.6% 能編譯執行、結果卻錯。程式做語意不變的改寫後，GPT 模型的通過率維持在 85% 到 91%，Qwen 從 74% 降到 56% 但未達顯著；這只算原本至少做對一次的題目，作者提醒有倖存者偏誤，不能和上面的 62.7% 直接比。87 個題目設定中 80 個只檢查輸出字樣與結束碼，「通過」不等於數值正確；只在一個平台（RTX 4070）測。<a class="src" href="https://arxiv.org/abs/2607.22588">ParBench 2026</a></li>
 <li><b>執行與 profiling 回饋能大幅提升</b>：GPU kernel 基準 250 題，DeepSeek R1 一次產生時比 PyTorch 快的比例 Level 1 為 12%、Level 2 為 36%；加上 10 輪執行結果與 profiler 回饋後提升到 43% 與 72%。正確性只用 5 組隨機輸入檢查。<a class="src" href="https://arxiv.org/abs/2502.10517">KernelBench 2025</a></li>
 <li><b>profiler 數據要先解讀再給模型</b><span class="new">新增</span>：AWS 的 KernelPro 在 42 個 KernelBench 題目上做消融（Sonnet 4.6、A100；每題 15 個獨立搜尋，各 30 輪、每輪 2 個候選，取最好的結果，極端值有截斷）。只給約 50 個 ncu 原始計數器時，幾何平均加速 1.77 倍，比完全不給 profiler 回饋的 3.35 倍還差（p = 0.0007），雖然解出的題數較多（36 對 32 題）；在原始計數器之外，再附上工具算出的瓶頸判斷與具體建議（例如「每執行緒 168 個暫存器，溢出到 local memory」），提升到 4.00 倍。作者的解釋是模型會去最佳化不影響實際時間的計數器。完整系統在 KernelBench 三個等級的幾何平均加速 2.42、4.69、5.30 倍（相對 PyTorch eager）。業界預印本，只用一個模型；取多次搜尋中最好的結果，數字偏樂觀；正確性只用 allclose（絕對誤差 1e-2、相對誤差 1e-3）判定；沒有限制的章節。<a class="src" href="https://arxiv.org/abs/2606.26453">KernelPro 2026</a></li>
 <li><b>正確性檢查加 profiling 的流程穩定有效</b>：把 Codex 改成「找熱點、規劃資料搬移、正確性檢查、依 profiling 修改」的流程轉成 OpenMP GPU offload，31 個有效 kernel 全部正確、27 個比參考實作快或持平；HeCBench 幾何平均 3.1 倍（A100）與 3.6 倍（RTX 4060），不加流程的同一模型只有 2.0 倍與 2.4 倍，Rodinia 甚至變慢（0.30 倍）。token 只多約 11%。沒有拆開測各步驟的貢獻。<a class="src" href="https://arxiv.org/abs/2601.04327">Kaplan 等 2026</a></li>
@@ -40,7 +40,7 @@
 <li><b>專門訓練的模型可以超越通用模型，但你用不到</b>：用強化學習專門訓練的 CUDA agent，在 KernelBench 上 96.8% 的題目比 torch.compile 快；同一流程下 Claude Opus 4.5 只有 66.4%。每種設定只跑一次，且挑最佳解時用了評分指標本身。<a class="src" href="https://arxiv.org/abs/2602.24286">CUDA Agent 2026</a></li>
 <li><b>agent 會偷改題目條件、漏掉同步問題</b>：多 agent 調校 HPC 程式的實驗中，agent 擅自把矩陣從 2048 放大到 8192 或 16384，監督角色都沒發現；一個缺少同步的 CUDA 版本通過了測試，錯誤沒被抓到。每種條件只跑 3 次，作者承認不足以下統計結論。<a class="src" href="https://arxiv.org/abs/2510.00031">VibeCodeHPC 2025</a></li>
 <li><b>真實程式裡的熱點最佳化：CUDA 只有約四成是對的</b><span class="new">新增</span>：114 個完整程式（92 個 CPU／OpenMP、22 個 CUDA），用 profiler 找出熱點函式，讓 GPT-5.1、Claude Sonnet 4.5、Qwen3-Coder 各產生 10 個改寫版本（單次生成，沒有執行回饋）。結果正確的比例：循序 76.9%、OpenMP 61.4%、CUDA 38.8%；CUDA 有 35.2% 連編譯都不過。要求至少快 1.5 倍時，3 次中至少有 1 次達標的機率：循序 0.10 到 0.17、OpenMP 約 0.15 到 0.25、CUDA 約 0.09 到 0.11。<a class="src" href="https://arxiv.org/abs/2611.02752">HPC-Bench 2026</a></li>
-<li><b>短的 kernel 平行化反而變慢</b><span class="new">新增</span>：同一研究中，結構簡單的程式在 16 執行緒 OpenMP 下，61 個有 41 個（67%）連 1.05 倍都達不到，因為 kernel 本身太短（中位數 7.33 ms，有些只有幾微秒），執行緒開銷就吃掉了好處；最複雜的一組則是寫不對。作者主張評估要看「得到正確且夠快結果的機率」，不能只看最好的加速倍數。<a class="src" href="https://arxiv.org/abs/2611.02752">HPC-Bench 2026</a></li>
+<li><b>短的 kernel 平行化反而變慢</b><span class="new">新增</span>：同一研究中，結構簡單的程式在 16 執行緒 OpenMP 下（中等資料大小），61 個有 41 個（67%）連三個模型共 30 個候選中最好的都到不了 1.05 倍；作者認為這組常是 kernel 太短（中位數 7.33 ms，有些只有幾微秒），執行緒開銷吃掉了好處，但同一組也有 matmul 加速 49.6 倍。最複雜的 5 個程式中，2 個沒有任何正確的候選。作者主張評估要看「得到正確且夠快結果的機率」，不能只看最好的加速倍數。加速倍數只算 kernel 本身的時間；資料搬移、配置記憶體或 I/O 佔大部分時，整個程式的加速會小得多。單一平台（OpenMP 在 AMD EPYC 7543、CUDA 在 A100；GCC 14.2、NVCC 12.4），CUDA 只有 22 個程式。<a class="src" href="https://arxiv.org/abs/2611.02752">HPC-Bench 2026</a></li>
 <li><b>移植手動最佳化過的 C++ 到 CUDA：有時先「去最佳化」比較好</b><span class="new">新增</span>：12 個為 Arm CPU 手動最佳化（NEON SIMD、分塊、預先打包）的 HPC kernel，比較「直接轉 CUDA 再最佳化」與「先讓模型移除 CPU 專屬最佳化、再轉 CUDA 再最佳化」，各 50 次。單次流程下 18 組可檢定的比較中，5 組先去最佳化較快、3 組直接轉較快（校正多重比較後）；最明顯的是卷積，Qwen3-235B 直接轉只有 12% 成功、去最佳化後 96%，成功版本的效能中位數 106 對 4,366 GFlops。但去最佳化多一次呼叫，拿同樣呼叫次數重試直接轉的對照組時，只剩 4 組領先；加上反覆生成與修正後，兩種做法的差距大多縮小。用的是 gpt-oss-120b 與 Qwen3-235B，不是最新的前沿模型；正確性只在測試尺寸下驗證。<a class="src" href="https://arxiv.org/abs/2606.06063">Mukunoki 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
@@ -52,17 +52,17 @@
 <div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字；「部分章節未讀到」指主要結果已核對，但頁面截斷使部分章節或附錄沒讀到。</div>
 <ol>
 <li><a href="https://arxiv.org/abs/2602.00933">MCP-Atlas: A Large-Scale Benchmark for Tool-Use Competency with Real MCP Servers</a>，Bandi 等，arXiv 2026 年 1 月（預印本，讀過全文）</li>
-<li><a href="https://arxiv.org/abs/2602.14878">MCP Tool Descriptions Are Smelly!</a>，Hasan 等，arXiv 2026 年 2 月（預印本，部分章節未讀到）</li>
+<li><a href="https://arxiv.org/abs/2602.14878">MCP Tool Descriptions Are Smelly!</a>，Hasan 等，arXiv 2026 年 5 月 v3（預印本，讀過全文，11 月 14 日補讀）</li>
 <li><a href="https://arxiv.org/abs/2608.26199">Benchmarking AI Agents for Hardware Design Automation via MCP Tool Calling</a>，Liparulo、Pierri，arXiv 2026 年 8 月（預印本，讀過全文）</li>
 <li><a href="https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html">SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering</a>，Yang 等，NeurIPS 2024（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2401.12554">Can Large Language Models Write Parallel Code?（ParEval）</a>，Nichols 等，HPDC 2024（正式發表，讀過全文）</li>
 <li><a href="https://pssg.cs.umd.edu/assets/papers/2025-09-translation-icpp.pdf">ParEval-Repo: A Benchmark Suite for Evaluating LLMs with Repository-level HPC Translation Tasks</a>，Davis 等，ICPP 2025（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2502.10517">KernelBench: Can LLMs Write Efficient GPU Kernels?</a>，Ouyang 等，ICML 2025（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2606.26453">Optimizing CUDA like a Human: Micro-Profiling Tools as Expert Surrogates for LLM-Based GPU Kernel Optimization（KernelPro）</a>，Gai、Zhang 等，AWS，arXiv 2026 年 8 月 v2（預印本，讀過全文）<span class="new">新增</span></li>
-<li><a href="https://arxiv.org/abs/2607.22588">ParBench: A Benchmark for Reliable Evaluation of LLM Parallel Code Translation</a>，Jhaveri 等，arXiv 2026 年 6 月（預印本，正文讀過全文，附錄部分未讀）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2607.22588">ParBench: A Benchmark for Reliable Evaluation of LLM Parallel Code Translation</a>，Jhaveri 等，arXiv 2026 年 6 月（預印本，讀過正文與附錄 E.4、H，其餘附錄未逐行讀）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2601.04327">ParaCodex: A Profiling-Guided Autonomous Coding Agent for Reliable Parallel Code Generation and Translation</a>，Kaplan 等，ACL 2026（正式發表，讀過全文；<a href="https://aclanthology.org/2026.acl-long.732/">ACL 頁面</a>）</li>
 <li><a href="https://arxiv.org/abs/2602.24286">CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation</a>，Dai 等，arXiv 2026 年 2 月（預印本，讀過全文）</li>
-<li><a href="https://arxiv.org/abs/2611.02752">HPC-Bench: A Comprehensive Benchmark for High Performance Computing Codes</a>，Cui 等，NeurIPS 2026 Evaluations &amp; Datasets Track（已接受，讀過全文，部分附錄未讀到）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2611.02752">HPC-Bench: A Comprehensive Benchmark for High Performance Computing Codes</a>，Cui 等，NeurIPS 2026 Evaluations &amp; Datasets Track（已接受，讀過全文，11 月 14 日補讀附錄）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2606.06063">LLM-Based Porting of Optimized C++ to CUDA Through Deoptimization and Reoptimization</a>，Mukunoki 等，arXiv 2026 年 6 月（預印本，讀過全文）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2510.00031">VibeCodeHPC</a>，arXiv 2025 年 10 月（預印本，讀過全文）</li>
 </ol>

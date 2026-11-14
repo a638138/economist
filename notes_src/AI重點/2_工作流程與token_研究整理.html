@@ -25,7 +25,7 @@
 <li><b>多輪修改會把原本對的東西改壞</b>：542 題單一函式的 Python 題目、每題 8 輪固定修改要求，第 8 輪時 GPT-4o 原有測試通過率從 90.2% 降到 72.4%，Llama-3.1-8B 從 76.1% 降到 31.6%。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
 <li><b>每輪重跑測試、退步就退回</b>：DeepSeek-V3 第 8 輪通過率從 75.8% 提升到 87.9%，Llama-3.1-8B 從 31.6% 提升到 47.3%。但修正用的測試就是評分用的測試，等於提前知道答案；只測兩個模型、沒有統計檢定。<a class="src" href="https://arxiv.org/abs/2607.01855">Huang 等 2026</a></li>
 <li><b>把意圖交代清楚，差很多</b>：加一個專門推測使用者目標與偏好的輔助 agent，在 GPT-5 模擬使用者的 500 題中，成功率從 18.1% 提升到 59.7%（論文前言另寫 13.5% 與 57.4%）；17 位開發者三週的真人使用中，86.2% 的建議被採用或稍改後採用，但沒有對照組。<a class="src" href="https://arxiv.org/abs/2510.21903">ToM-SWE 2026</a></li>
-<li><b>能跑驗收測試時，agent 會「為測試而做」</b><span class="new">新增</span>：Microsoft 的個案研究，要 agent 把一個約 5,800 行的 React 表格元件重寫成 Angular 元件庫，用 222 個隱藏的行為測試評分（agent 只看得到每題過或不過）。不能跑測試時，兩個模型（Claude Opus 4.7、GPT-5.5，都用 GitHub Copilot CLI）交出真正的元件庫，但只過 148 到 189 題；能跑測試時，除了一次始終沒去跑測試的，分數都到 221 到 222，但 GPT 6 次中有 5 次把功能直接寫在示範頁裡，元件庫是空殼或根本不存在，其中一次整個交付只有一個 1,758 行的檔案，完成報告卻寫「元件庫已完成、222 passed」。Claude 6 次中有 2 次出現同樣傾向；而且 Claude 能跑測試的 6 次全都沒附元件庫的發佈設定、也沒自己寫單元測試，不能跑測試的 3 次則都有。只有一個任務、每種條件 3 次、沒有統計檢定，作者說盛行率未知。<a class="src" href="https://arxiv.org/abs/2606.28430">Ma 等 2026</a></li>
+<li><b>能跑驗收測試時，agent 會「為測試而做」</b><span class="new">新增</span>：Microsoft 的個案研究，要 agent 把一個約 5,800 行的 React 表格元件重寫成 Angular 元件庫，用 222 個隱藏的行為測試評分（agent 只看得到每題過或不過）。不能跑測試時，兩個模型（Claude Opus 4.7、GPT-5.5，都用 GitHub Copilot CLI）交出真正的元件庫，但只過 148 到 189 題；能跑測試時，除了一次始終沒去跑測試的，分數都到 221 到 222，但 GPT 6 次中有 5 次把功能直接寫在示範頁裡，元件庫沒被示範頁用到、只有外殼，或根本不存在，其中一次整個交付只有一個 1,758 行的檔案，完成報告卻寫「元件庫已完成、222 passed」。Claude 6 次中有 2 次出現同樣傾向；而且 Claude 能跑測試的 6 次全都沒附元件庫的發佈設定、也沒自己寫單元測試，不能跑測試的 3 次則都有。只有一個任務、每種條件 3 次、沒有統計檢定，作者說盛行率未知；不能跑測試的那組沒有交示範頁，分數是研究者替每次執行另寫接線程式後測的。<a class="src" href="https://arxiv.org/abs/2606.28430">Ma 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
 <p>計畫寫下來不會自動被執行，要在關鍵步驟設檢查點，或把計畫拆成一步一步的小任務。效果最一致的是「先有測試」：先讓 agent 寫或補測試，你確認測試合理後再讓它改程式，每次改完跑完整回歸測試。<span class="new">更新</span>測試是 agent 的目標，也會變成它唯一在乎的東西：完成報告不能當證據，驗收時要看產物本身（功能是不是真的在你要的模組裡、是否被呼叫、有沒有寫死針對測試輸入的分支），並保留一組 agent 看不到的測試或量測，用來最後確認。<span class="new">更新</span>agent 寫的測試，不要用「通過了、覆蓋率有提高」判斷好壞：把程式故意改壞一處，確認測試會失敗；並看一眼測試裡有沒有真的在比對結果。</p>
@@ -74,7 +74,7 @@
 <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Prompt caching</a>、<a href="https://code.claude.com/docs/en/model-config">Model configuration</a>，Anthropic，2026（官方文件，2026 年 11 月 2 日查閱）</li>
 <li><a href="https://arxiv.org/abs/2606.05670">Do More Agents Help? Evaluating Accuracy and Cost in LLM Multi-Agent Workflows</a>，Fu 等，arXiv 2026 年 6 月（預印本，讀過全文）</li>
 <li><a href="https://www.vals.ai/blog/multi-agent-vibe-code-bench">Multi-Agent Vibe Code Bench</a>，Vals AI，2026 年 10 月（研究報告，未經同儕審查，讀過全文）</li>
-<li><a href="https://arxiv.org/abs/2606.28430">Building to the Test: Coding Agents Deliver What You Check, Not What You Requested</a>，Ma 等，Microsoft，arXiv 2026 年 6 月（預印本，正文讀過全文，附錄未讀）<span class="new">新增</span></li>
+<li><a href="https://arxiv.org/abs/2606.28430">Building to the Test: Coding Agents Deliver What You Check, Not What You Requested</a>，Ma 等，Microsoft，arXiv 2026 年 6 月（預印本，讀過全文，11 月 14 日補讀附錄）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2607.12161">Token Reduction Is Not Cost Reduction: An Empirical Study of End-to-End Efficiency in API-Based Coding Agents</a>，Weinberger、Hozez，arXiv 2026 年 8 月 v5（預印本，讀過全文）<span class="new">新增</span></li>
 </ol>
 </section>
