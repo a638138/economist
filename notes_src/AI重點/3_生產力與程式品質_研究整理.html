@@ -36,7 +36,7 @@
 <li><b>效能類 PR 常缺量化數字</b>：2,260 個效能 PR，agent 寫的有附驗證的比例和人相近（82.3% 對 80.6%），但較多只靠推理說明（51.4% 對 39.3%），較少跑 benchmark（46.1% 對 57.2%），但 agent 組逐季上升，到 2026 年第二季已和人相當（60.1% 對 58.7%）；合併率 54.4% 對 73.3%。人和 agent 都約一半有驗證的 PR 沒附任何量化數字。<a class="src" href="https://arxiv.org/abs/2610.03969">Peng 等 2026</a></li>
 <li><b>多數被接受的 agent PR 沒經修改</b>：9,427 個已結案的 agent PR，被接受的中外圍貢獻者 76.5%、核心開發者約 72% 沒經修改。核心開發者審得比較仔細（審查留言 3.6 則對 2.0 則，有統計檢定、效果量小）；沒跑 CI 就合併的比例，外圍 19.1%、核心 11.2%（未檢定）。<a class="src" href="https://arxiv.org/abs/2601.20106">Cynthia 等 2026</a></li>
 <li><b>只有 AI 審查的 PR 合併率較低</b>：只經 AI 審查的 PR 合併率 45.2%，只經人審查的 68.4%；在 98 個只經 AI 審查、最後被放棄的 PR 中，找到 13 個審查機器人（含靜態掃描工具），12 個的有效建議比例（關鍵字判定）低於 60%；只看失敗的 PR，很多工具只有幾個樣本。合併率的分母包含仍開著的 PR，只算已結案的是 56.4% 對 76.0%。沒有控制 PR 大小等因素，只用 AI 審查的專案也可能本來就缺維護者。<a class="src" href="https://arxiv.org/abs/2604.03196">Chowdhury 等 2026</a></li>
-<li><b>真實的多檔案工作仍然很難</b>：參考解答平均改 4.1 個檔案、107.4 行的題目上，公開題目最佳 43.6%；新創公司的私有 repo 題目最佳 17.8%，同一個模型（Sonnet 4）是 42.7% 對 9.1%。分數都是在提供人工補寫的需求與介面規格下得到的。Claude Sonnet 4 的失敗主要是 context 爆掉與不停讀檔（內文寫 35.6% 與 17.0%，同版表格換算約 32% 與 19%，論文前後不一致），而且這個分析是在每題最多 50 回合、2 美元的上限下跑的。題目只有 Python、JavaScript、TypeScript、Go，C++ 被作者列為代表不足。<a class="src" href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro 2026</a></li>
+<li><b>真實的多檔案工作仍然很難</b>：參考解答平均改 4.1 個檔案、107.4 行的題目上，依 ICML 正式版（每題最多 50 回合、2 美元），公開題目最佳 25.9%（GPT-5）、新創公司的私有 repo 題目最佳 17.8%（Opus 4.1），同一個模型 Sonnet 4 是 17.6% 對 9.1%。arXiv v2 另外重跑了公開題目，最佳 43.6%（Sonnet 4.5），但沒寫明設定，私有題目也沒有重跑，所以這組數字不能和私有題目直接比。分數都是在提供人工補寫的需求與介面規格下得到的。Claude Sonnet 4 的失敗主要是 context 爆掉與不停讀檔（內文寫 35.6% 與 17.0%，同版表格換算約 32% 與 19%，論文前後不一致），而且這個分析是在每題最多 50 回合、2 美元的上限下跑的。題目只有 Python、JavaScript、TypeScript、Go，C++ 被作者列為代表不足。<a class="src" href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro 2026</a></li>
 <li><b>C++ 明顯比 Python 難</b>：2025 年的多語言基準中，Python 最佳 52.2%，C++ 最佳只有 14.73%、C 只有 9.38%；改越多檔案、補丁越長，成功率越低。但差距不全是語言造成的：Python 題取自 SWE-bench Verified、難題比例低（依論文表 3 算，Python 9%、C++ 33%），三種 agent 框架原本也是為 Python 設計，作者自己列了這些原因。用的是 2025 年的模型，C++ 只有 129 題。<a class="src" href="https://proceedings.neurips.cc/paper_files/paper/2025/hash/5afa9cb1e917b898ad418216dc726fbd-Abstract-Datasets_and_Benchmarks_Track.html">Multi-SWE-bench 2025</a></li>
 </ol>
 <h3>對你的意義</h3>
@@ -57,7 +57,7 @@
 <li><a href="https://arxiv.org/abs/2610.03969">How Do Coding Agents Optimize Software and Report Performance Validation?</a>，Peng 等，arXiv 2026 年 10 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2601.20106">Are We All Using Agents the Same Way? An Empirical Study of Core and Peripheral Developers' Use of Coding Agents</a>，Cynthia 等，MSR 2026（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2604.03196">From Industry Claims to Empirical Reality: An Empirical Study of Code Review Agents in Pull Requests</a>，Chowdhury 等，MSR 2026（正式發表，讀過全文）</li>
-<li><a href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?</a>，Deng 等，ICML 2026（正式發表，讀過全文；<a href="https://icml.cc/virtual/2026/poster/61047">ICML 頁面</a>）</li>
+<li><a href="https://arxiv.org/abs/2509.16941">SWE-Bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?</a>，Deng 等，ICML 2026（正式發表，讀過 arXiv v2 與 PMLR 正式版全文，兩版的公開題目分數不同，見內文；<a href="https://icml.cc/virtual/2026/poster/61047">ICML 頁面</a>）</li>
 <li><a href="https://proceedings.neurips.cc/paper_files/paper/2025/hash/5afa9cb1e917b898ad418216dc726fbd-Abstract-Datasets_and_Benchmarks_Track.html">Multi-SWE-bench: A Multilingual Benchmark for Issue Resolving</a>，Zan 等，NeurIPS 2025（正式發表，讀過全文）</li>
 </ol>
 </section>
