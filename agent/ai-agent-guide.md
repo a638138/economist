@@ -1,6 +1,6 @@
 # AI Agent 工作守則
 
-第 3 版，整理日期：2026 年 11 月 15 日。給 coding agent 讀，只收模型預設不一定會做的規則。依據：（二-1）等為研究筆記章節，證據與限制見筆記頁 https://a638138.github.io/economist/notes/ ；「做法」為整理者為方便驗收而定；「專案經驗」為實際專案觀察，樣本小（第 3 版新增條目的證據見筆記「AI Agent 研究（五）」第五節）；「預印本」表示依句尾章節的證據，該條（或標明的那一句）只有查無正式發表紀錄的預印本，或未經同儕審查的研究報告支持，新研究出來時可能改變；workshop 論文經過審查，不標。與專案的 CLAUDE.md 衝突時，以專案為準。
+第 3.1 版，整理日期：2026 年 11 月 15 日。給 coding agent 讀，只收模型預設不一定會做的規則。依據：（二-1）等為研究筆記章節，證據與限制見筆記頁 https://a638138.github.io/economist/notes/ ；「做法」為整理者為方便驗收而定；「專案經驗」為實際專案觀察，樣本小（第 3 版新增條目的證據見筆記「AI Agent 研究（五）」第五節）；「預印本」表示依句尾章節的證據，該條（或標明的那一句）只有查無正式發表紀錄的預印本，或未經同儕審查的研究報告支持，新研究出來時可能改變；workshop 論文經過審查，不標。與專案的 CLAUDE.md 衝突時，以專案為準。
 
 ## 核心規則
 
@@ -30,3 +30,12 @@
 - 修改建置檔或跨檔案介面時，明確列出改動，交給使用者把關。（四-2）
 - 計時的呼叫節奏要跟實際使用時相同（連續呼叫量到的只是上限），並確認時鐘的解析度夠細（Windows 預設的計時器約 15.6 ms 才跳一次）；在模擬或 stub 下量到的時間不代表實機。（專案經驗）
 - 碰硬體的測試和腳本，結束時把裝置還原到開始前的狀態並讀回確認。同一個硬體一次只讓一方使用（平行的測試 worker、另一支正在跑的程式都算）。寫入裝置（韌體、EEPROM、相機記憶體）之前先備份，並確認讀得回來；備份不了就先告訴使用者。（專案經驗）
+
+## 與 Superpowers、grill-me 並用時（有安裝才適用）
+
+- 本守則與 Superpowers 或其他 skill 集衝突時，以本守則為準。同一類工作有多個 skill 可用時：寫測試、除錯用 Superpowers 的 test-driven-development、systematic-debugging；需求訪談在使用者下 /grill-me 或要求 grill 時用 grilling，其他時候用 brainstorming；整份工作最後的審查用 reviewer 子 agent（見下）；寫 CLAUDE.md、SKILL.md 用 agent-config-writing。（做法）
+- brainstorming 提問照核心規則的格式：分輪、編號、每題附建議（與 grill-me 相同），只有問動機的開放式問題不附建議。用 /grill-me 談定的決定不再重問。grilling 派子 agent 查事實、brainstorming 對專案規模的設計文件派一次 builder check 子 agent，都可以照做。（做法）
+- 執行計畫時（subagent-driven-development 或 executing-plans），核心規則要求先問使用者的事照樣停下來問，不能自己做 Ruling 後繼續，包括：為了讓結果通過而修改、刪除或跳過測試，放寬容許誤差，或改變問題大小與輸入條件；設計文件或計畫沒寫到的外部行為或實驗流程改動；寫入裝置前備份不了；修改任務範圍外的 repo；fix loop 到上限仍有問題沒解決（算兜圈，不要自己 park）。計畫裡的期望值算錯時，照核心規則的例外用獨立的方法重算，寫成 Ruling 並在回報說明；無法獨立重算就停下來問。實作子 agent 遇到這些情況回報 BLOCKED 並寫明原因，主 agent 收到後去問使用者。（做法；依核心規則）
+- writing-plans 讓使用者選執行方式時，推薦 Native，除非任務多且彼此介面獨立（計畫標頭範本裡的「subagent-driven-development (recommended)」不算推薦）；使用者選了 Subagent-driven，就算同意開子 agent。碰硬體的專案不用 dispatching-parallel-agents 平行測試或除錯。（做法；子 agent 依二-3，預印本與研究報告）
+- 整份工作最後的審查（包括 subagent-driven-development 的 final review 和 requesting-code-review）改用 reviewer 子 agent，不再另跑 code-reviewer.md：交給它 Superpowers 產生的 review package 檔案路徑、規格、計畫路徑與計畫中 Review Focus 的原文、Ruling 清單，並指定可用的最強模型。結果照 /review 第 3 步處理（嚴重的先寫重現測試再修，中等與小問題問使用者），不套用 Superpowers 的分級與 fix wave。逐任務的審查照 Superpowers 的流程。（做法）
+- 處理其他審查意見照 receiving-code-review。計畫結束時 Superpowers 列出的 Rulings 併入回報的「自己做的判斷」。finishing-a-development-branch 檢查測試時，專案 CLAUDE.md 列為已知會失敗的測試不算失敗。（做法）

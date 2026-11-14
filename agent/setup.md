@@ -1,6 +1,6 @@
 # 建立 Agent 開發環境
 
-整理日期：2026 年 11 月 14 日。在新專案裡建立一套 coding agent 開發環境：工作守則、審查用子 agent、交接與審查指令、撰寫設定檔的 skill。這一頁同時寫給人和 agent 讀。
+整理日期：2026 年 11 月 15 日。在新專案裡建立一套 coding agent 開發環境：工作守則、審查用子 agent、交接與審查指令、撰寫設定檔的 skill。這一頁同時寫給人和 agent 讀。
 
 ## 怎麼用
 
@@ -32,6 +32,13 @@
 7. 不是 C++／GPU／即時系統的專案，守則裡那一節本來就標明不適用，不要刪改守則檔。
 8. 看一次版本控制狀態，把這些檔案作為一個提交：「建立 agent 開發環境」。
 9. 回報：裝了哪些檔、在哪裡、有沒有覆蓋或跳過既有檔案、CLAUDE.md 還缺哪些需要使用者補的內容。並提醒使用者：新的指令與子 agent 在下一個 session 才會生效。
+
+## 搭配 Superpowers 與 grill-me（選用）
+
+守則最後一節「與 Superpowers、grill-me 並用時」負責兩者的分工，沒裝就不適用。這一段是寫給使用者的建議，agent 不要自行安裝。
+
+- grill-me：只裝 `grill-me` 與 `grilling` 兩個 skill（grill-me 會呼叫 grilling，缺一不可），從 https://github.com/mattpocock/skills 的 `skills/productivity/` 取這兩個資料夾。它不限於程式，適合裝在全域 `~/.claude/skills/`；要讓手機與雲端 session 也能用，就改放專案的 `.claude/skills/`。grilling 在使用者要求 grill 時也會自動觸發，守則已規定其他時候的需求訪談用 brainstorming。不建議裝整包 mattpocock-skills：裡面的 tdd、diagnosing-bugs、code-review、writing-for-agents 會自動觸發，和 Superpowers 與 agent-config-writing 重疊。
+- Superpowers：它會裝一個每個 session 開頭注入指令的 hook，而且流程較重，建議只在要做中大型新功能的專案裡裝：在該專案執行 `claude plugin install superpowers@claude-plugins-official --scope project`，啟用設定會寫進 `.claude/settings.json` 並跟著 repo，協作者也會被要求安裝；只想自己在這個專案用，改用 `--scope local`（寫進不提交的 `.claude/settings.local.json`）。硬體除錯、效能調校、小修改的專案不裝。
 
 ## 裝好之後
 
