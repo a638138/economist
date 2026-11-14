@@ -28,6 +28,7 @@
 <li><b>盯著執行過程</b>：反覆讀同一檔案或改了又改就中斷；明顯超過平常回合數就重新說明。</li>
 <li><b>effort 用預設</b>：日常用 medium，修既有程式的 bug 開 high，max 只在測過確實有效時用。</li>
 <li><b>單一 agent 優先</b>：子 agent 只用在可以完全切開的工作。</li>
+<li><b>重要決定寫成 ADR</b><span class="new">新增</span>：11 月 15 日加入守則。只寫難以回頭、日後看會意外、而且有真實取捨的決定（三項都符合才寫，避免小決定淹沒紀錄），放在 <code>docs/adr/</code>。agent 寫的 ADR 狀態先是「提議」，使用者看過才改成「已採納」；推翻舊決定時另寫新的，舊的標為被取代。Superpowers 的 Ruling 只在計畫結束時列一次，之後工作區就刪掉，符合條件的也要轉成 ADR 才留得下來。</li>
 <li><b>搭配外部 skill 集時先定分工</b><span class="new">新增</span>：11 月 15 日讀過 Superpowers（v7.0.2）與 grill-me 的原文後，守則改為第 3.1 版，最後加一節分工規則。最大的衝突是 Superpowers 執行計畫時「不停下來問、自己裁決繼續」：它禁止為了讓輸出相符而只修表面，但計畫本身有錯時（例如測試的期望值），會自己裁決後繼續。守則規定，核心規則要求先問的事（放寬門檻、沒有獨立依據就改測試、計畫外的外部行為改動、寫入裝置等）照樣要停下來問；期望值本身算錯、能用獨立方法重算的，照核心規則的例外處理。其餘：同類 skill 指定用哪一個（測試與除錯用 Superpowers，需求訪談用 brainstorming 或 grill-me，審查用 reviewer，寫設定檔用 agent-config-writing）、brainstorming 提問照分輪編號附建議、最終審查改用只讀的 reviewer。建議 Superpowers 只裝在要做中大型新功能的專案；grill-me 只裝它和 grilling 兩個 skill，不裝整包。這些分工是讀文件推出來的，還沒在實際 session 驗證；兩者也都是實務經驗，沒有對照實驗。</li>
 <li><b>省錢看帳單，不看 token</b><span class="new">新增</span>：不裝壓縮工具輸出或代理 API 的外掛；比較做法時看每個成功任務的實際費用。少幾個回合、少掛用不到的 MCP 工具，比壓縮輸出有效。</li>
 <li><b>效能修改要附數字</b>：要求修改前後的量測結果，並檢查運算在目標硬體上、同步正確。<span class="new">更新</span>平行化前先量 kernel 時間，太短的不值得開執行緒或搬 GPU。CUDA 改寫一定要讓 agent 能編譯、執行、比對結果。profiler 結果請 agent 先判斷瓶頸再細看，不要只給原始指標。</li>

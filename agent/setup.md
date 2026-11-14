@@ -45,4 +45,5 @@
 - 每個 session 都會讀守則；寫 CLAUDE.md、SKILL.md 或 MCP 工具時會自動載入 skill。
 - 非小型的工作做完，agent 應該自己派 reviewer 審查；它忘了就下 `/review`。
 - 換 session 前下 `/handoff`，把它給的開場訊息貼到新 session。
+- agent 寫的 ADR（`docs/adr/`）狀態先是「提議」，看過內容沒問題再告訴它改成「已採納」。
 - 守則與這些檔案的依據、研究證據，見筆記分頁「AI重點」。
