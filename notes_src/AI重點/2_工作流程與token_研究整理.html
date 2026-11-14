@@ -36,9 +36,9 @@
 <ol class="points">
 <li><b>token 多不等於做得好</b>：SWE-bench Verified 500 題、8 個模型、每題 4 次，成本最低的一群之後，花更多 token 準確率就不再提升甚至下降；花費高的執行常是反覆讀同一檔案、改了又改。同一題不同次執行，最貴的平均約是最便宜的 2 倍。<a class="src" href="https://arxiv.org/abs/2604.22750">Bai 等 2026</a></li>
 <li><b>成本主要是輸入</b>：即使有快取，讀取快取仍是金額最大的一項；探索與修改兩個階段約佔三分之二的回合。只分析一個模型。<a class="src" href="https://arxiv.org/abs/2604.22750">Bai 等 2026</a></li>
-<li><b>限制回合數能省錢，但會少解幾題</b>：100 題、3 個模型、每種設定只跑一次。上限設在第 75 百分位時，成本降 23.6%（Claude）、38.4%（GPT 4.1）、68.3%（Gemini），解題數分別 −4、−5、+2 題；設在第 25 百分位時 Gemini 從 63 題掉到 26 題。需要時才追加回合，成本可再降約 6% 到 24%（摘要寫 12% 到 24%，與表格不符）。百分位是用同一批題目算的，沒有另外驗證。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
-<li><b>context 小時，管理機制很重要；夠大時差異很小</b>：4 個模型、2 個 benchmark，context 只有 32k 時，有管理機制比沒有高 35.7 個百分點（SWE-bench），到 128k 時只差 2.7。<a class="src" href="https://arxiv.org/abs/2609.20804">Fan 等 2026</a></li>
-<li><b>規劃步驟主要幫弱模型</b>：最小的 30B 模型加規劃後 SWE-bench 從 13.6% 提升到 25.2%；較強的模型沒有一致的提升，但有些能少花 26% 到 32% 的成本。只用 bash、不給專用工具，弱模型掉 15 個百分點，最強模型反而 +3.6、成本 −53%。每種設定看起來只跑一次，但有做配對檢定與多重比較校正。<a class="src" href="https://arxiv.org/abs/2609.20804">Fan 等 2026</a></li>
+<li><b>限制回合數能省錢，但會少解幾題</b>：100 題、3 個模型、每種設定只跑一次。上限設在第 75 百分位時，成本降 23.6%（Claude）、38.4%（GPT 4.1）、68.3%（Gemini），解題數分別 −4、−5、+2 題；設在第 25 百分位時 Gemini 從 63 題掉到 26 題。需要時才追加回合，成本可再降約 6% 到 24%（摘要寫 12% 到 24%，與表格不符）。百分位是用同一批題目算的，沒有另外驗證；成本計算關閉了快取，實際帳單（大部分是快取費用，見下方）省下的比例可能不同。<a class="src" href="https://arxiv.org/abs/2510.16786">Gao、Peng 2026</a></li>
+<li><b>context 小時，管理機制很重要；夠大時差異很小</b>：4 個模型（Nemotron-3 三種大小與 Mistral，不含 Claude 或 GPT）、2 個 benchmark，context 只有 32k 時，有管理機制比沒有高 35.7 個百分點（SWE-bench），到 128k 時只差 2.7。<a class="src" href="https://arxiv.org/abs/2609.20804">Fan 等 2026</a></li>
+<li><b>規劃步驟主要幫弱模型</b>：最小的 30B 模型加規劃後 SWE-bench 從 13.6% 提升到 25.2%；較強的模型沒有一致的提升，但有些能少花 26% 到 32% 的成本。只用 bash、不給專用工具，弱模型掉 15 個百分點，最強模型反而 +3.6、成本 −53%。模型是 Nemotron-3 與 Mistral，不含 Claude 或 GPT；規劃與工具只在 128k context 下測；每種設定每題只跑一次，有做配對檢定，但 Terminal-Bench 只有 89 題，很多比較沒達到顯著。<a class="src" href="https://arxiv.org/abs/2609.20804">Fan 等 2026</a></li>
 <li><b>快取價格（官方文件）</b>：讀取快取一般是輸入價格的 0.1 倍，Opus 5.5 與 Sonnet 5.5 是 0.05 倍；寫入快取 1.25 倍（5 分鐘）或 2 倍（1 小時）。修改工具定義會讓整個快取失效；變更 effort 或 thinking 設定會讓對話部分的快取失效。<a class="src" href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic 文件 2026</a></li>
 <li><b>effort 等級（官方文件）</b>：Opus 5.5 預設 medium，適合範圍清楚的日常開發；修既有程式的 bug、需要驗證邊界條件時用 high；max 適合讓它長時間獨立處理的難題，但官方提醒 max 可能報酬遞減、容易想太多，先測試再大量使用。<a class="src" href="https://code.claude.com/docs/en/model-config">Anthropic 文件 2026</a></li>
 <li><b>壓縮工具輸出：token 少了，帳單沒少</b><span class="new">新增</span>：Claude Code 上 103 個任務、2,848 次執行的成對比較（多數用 Haiku 4.5，另有 Sonnet 5 與 Opus 4.8）。一個加了檢索與排序的壓縮外掛讓工具輸出 token 少了 38.4%，實際帳單卻 +6.8%（95% 信賴區間 +2.8% 到 +11.3%）；另一個 API 代理型外掛 +48.4%；只有規則式的簡單壓縮省了 2.7%（−5.6% 到 −0.1%，在保留題組上信賴區間跨過零）。各組成功率沒有可偵測的差異（基準已有 96%）。<a class="src" href="https://arxiv.org/abs/2607.12161">Weinberger、Hozez 2026</a></li>
@@ -51,7 +51,7 @@
 <section>
 <h2><span class="no">三</span>多 agent：通常更貴，不一定更好</h2>
 <ol class="points">
-<li><b>六種多 agent 流程有五種輸給單一 agent</b>：同樣用 GPT-4.1、10 個 benchmark，五種固定流程平均落後 2.56 到 11.29 個百分點；唯一勝出的只多 1.44 個百分點，在誤差範圍內。每種只跑一次。<a class="src" href="https://arxiv.org/abs/2606.05670">Fu 等 2026</a></li>
+<li><b>六種多 agent 流程有五種輸給單一 agent</b><span class="new">更新</span>：同樣用 GPT-4.1、10 個 benchmark（數學、問答、HumanEval、MBPP 等，都不是在 repo 裡寫程式的 agent 任務）、每種跑 3 次；各流程是作者在共用步數上限下重新實作的版本，不是原始系統。五種流程的合併準確率落後 1.71 到 8.76 個百分點，每次都輸；唯一勝出的 EvoAgent 多 3.05 個百分點，3 次都贏，token 多用 27%。token 用得多不代表比較準：兩種辯論式流程用了 1.39 與 4.34 倍的 token，準確率反而較低。沒有統計檢定。依 2026 年 10 月的 v2（v1 每種只跑一次，數字不同）。<a class="src" href="https://arxiv.org/abs/2606.05670">Fu 等 2026</a></li>
 <li><b>agent 團隊成本高 1.8 到 5.1 倍</b>：50 個網頁應用程式、8 種設定各跑一次，四組「團隊 vs 單一 agent」只有一組顯著提升（GPT 6 Sol 中等 effort，+7.3 個百分點）。Claude Opus 5.5 中等 effort 時團隊 −0.3 個百分點；max effort 團隊每個應用程式 122 美元、單一 agent 23.77 美元，分數差距不顯著。多出的成本主要是每個子 agent 重新讀入的快取輸入。<a class="src" href="https://www.vals.ai/blog/multi-agent-vibe-code-bench">Vals AI 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
@@ -60,7 +60,7 @@
 
 <section>
 <h2><span class="no">四</span>參考文獻</h2>
-<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字；「部分章節未讀到」指主要結果已核對，但頁面截斷使部分章節或附錄沒讀到。</div>
+<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字，並讀過作者自述的限制。2026 年 11 月 14 日全部重新下載最新版全文（arXiv 或會議 PDF、官方網頁）再查一次：用程式比對每條引用的數字是否出現在全文中，逐篇找出作者自述的限制（有獨立章節的讀該章節，沒有的以關鍵字定位相關段落），重複次數等設定另到實驗設定段核對；論文改版而數字改變的，依最新版改寫並註明版本。</div>
 <ol>
 <li><a href="https://arxiv.org/abs/2609.38108">Do LLM Agents Execute the Plans They Declare?</a>，Oota 等，arXiv 2026 年 9 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2608.16742">TDD-Agent: Test-Driven Reasoning for Code Generation</a>，Yu 等，arXiv 2026 年 8 月（預印本，讀過全文）</li>
@@ -72,7 +72,7 @@
 <li><a href="https://arxiv.org/abs/2510.16786">More with Less: An Empirical Study of Turn-Control Strategies for Efficient Coding Agents</a>，Gao、Peng，ICSE 2026（正式發表，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2609.20804">An Empirical Study of Harness Design for Coding Agents</a>，Fan 等，arXiv 2026 年 9 月（預印本，讀過全文）</li>
 <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Prompt caching</a>、<a href="https://code.claude.com/docs/en/model-config">Model configuration</a>，Anthropic，2026（官方文件，2026 年 11 月 2 日查閱）</li>
-<li><a href="https://arxiv.org/abs/2606.05670">Do More Agents Help? Evaluating Accuracy and Cost in LLM Multi-Agent Workflows</a>，Fu 等，arXiv 2026 年 6 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2606.05670">Do More Agents Help? Evaluating Accuracy and Cost in LLM Multi-Agent Workflows</a>，Fu 等，arXiv 2026 年 10 月 v2（預印本，讀過全文）</li>
 <li><a href="https://www.vals.ai/blog/multi-agent-vibe-code-bench">Multi-Agent Vibe Code Bench</a>，Vals AI，2026 年 10 月（研究報告，未經同儕審查，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2606.28430">Building to the Test: Coding Agents Deliver What You Check, Not What You Requested</a>，Ma 等，Microsoft，arXiv 2026 年 6 月（預印本，讀過全文，11 月 14 日補讀附錄）<span class="new">新增</span></li>
 <li><a href="https://arxiv.org/abs/2607.12161">Token Reduction Is Not Cost Reduction: An Empirical Study of End-to-End Efficiency in API-Based Coding Agents</a>，Weinberger、Hozez，arXiv 2026 年 8 月 v5（預印本，讀過全文）<span class="new">新增</span></li>

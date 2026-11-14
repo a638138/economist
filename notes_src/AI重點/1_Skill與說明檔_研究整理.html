@@ -18,13 +18,13 @@
 <section>
 <h2><span class="no">一</span>Skill 有沒有用：平均有幫助，但很不穩定</h2>
 <ol class="points">
-<li><b>人工寫的 skill 平均有效</b>：87 個任務、18 組模型與 harness、每格 3 次，加上人工 skill 後通過率從 33.9% 提升到 50.5%（+16.6 個百分點）。軟體工程類 +11.6 個百分點，各領域介於 +9.7 到 +28.8。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
+<li><b>人工寫的 skill 平均有效</b>：87 個任務、18 組模型與 harness、每格 3 次，加上人工 skill 後通過率從 33.9% 提升到 50.5%（+16.6 個百分點）。軟體工程類 +11.6 個百分點，各領域介於 +9.7 到 +28.8。作者指出 skill 也加長了 context，增益可能有一部分只是「多給了文字」，沒有做等長的對照組；任務都是終端機裡的容器化任務。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
 <li><b>有些任務反而變差</b>：87 個任務中有 13 個加了 skill 後變差。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
 <li><b>讓模型自己寫 skill 反而扣分</b>：三組專用 harness 上，自生成 skill 比不用 skill 低 8.1 到 11.5 個百分點。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
 <li><b>真實情境下效益大幅縮水</b>：當 agent 要從 34,198 個真實 skill 中自己檢索，Claude Opus 4.6 的增益從強制載入時的約 20 個百分點降到約 3 個；Kimi 與 Qwen 甚至低於不用 skill。每種設定跑 3 次，沒有信賴區間。<a class="src" href="https://arxiv.org/abs/2604.04323">Skills in the Wild 2026</a></li>
 <li><b>skill 越多，越常選錯或乾脆不用</b><span class="new">新增</span>：SkillsBench 上 38 組有 skill 能幫上忙的「任務與模型」配對（Haiku 4.5 與 Sonnet 4.6）、2,545 次執行。只載入有用的 skill 時通過率最高；把 skill 庫擴充到 52、102、202 個，通過率平均分別降 8、14、21 個百分點（202 個時 Haiku 降 26、Sonnet 降 15）。202 個時，只用到正確 skill 的執行從 88.0% 降到 52.6%，有 38.5% 的執行完全沒呼叫任何 skill。在 102 和 202 個時，「選錯或不選」造成的下降信賴區間不含零；上下文變長本身的影響點估計一直是正的（約 6 到 7 個百分點），但信賴區間太寬（約 −13 到 +25），作者的結論是與零無法區分，也說它可能真的存在、只是樣本不夠；在 Sonnet 上它的點估計反而比選錯還大，但兩者都不顯著。只有兩個 Anthropic 模型、一個 benchmark，最小的 skill 庫是 52 個；論文寫 2,545 次執行，表格各列加總是 2,576，差約 1%，不影響結論。<a class="src" href="https://arxiv.org/abs/2605.24050">More Skills, Worse Agents? 2026</a></li>
 <li><b>針對任務改寫 skill 能救回一部分</b>：Terminal-Bench 2.0 上，Claude Opus 4.6 從無 skill 的 57.7% 提升到 65.5%，但單靠檢索只有 61.4%，提升主要來自「針對該任務改寫」這一步，而且每題要多跑一次探索。<a class="src" href="https://arxiv.org/abs/2604.04323">Skills in the Wild 2026</a></li>
-<li><b>軟體工程 skill 大多沒差</b>：49 個公開的軟體工程 skill、約 565 個真實 repo 任務，39 個零提升，平均 +1.2%；token 用量從 −78% 到 +451%；7 個專門 skill 最高 +30%；3 個因版本不符最多 −10%。<a class="src" href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench 2026</a></li>
+<li><b>軟體工程 skill 大多測不出效果</b><span class="new">更新</span>：98 個公開的軟體工程 skill，各配一個固定版本的真實 repo 與 10 個需求，4 組 agent 與模型、有無 skill 各跑一次，共 3,920 次配對比較。92 個 skill 沒有統計上顯著的效果，平均通過率只從 76.6% 到 76.9%。有幫助的例如 viper-configuration（+17.7），補上了 agent 本來會省略的步驟。有害的 asyncio-patterns 平均 −17.0、四組配置都變差，作者歸因於內容寬泛、和任務不合；另一種傷害是 skill 的範本蓋過任務的明確要求，例如 github-actions-templates 在一組配置下把指定路徑的檔案寫到別處（−22.8）。同一個 skill 換配置後效果常常不同。限制：需求是從每個 skill 反推出來的，測的是 skill 宣稱的能力，不是一般的工作分佈；每個 skill 每組配置只有 10 個需求、各跑一次，檢定力低，「沒有顯著效果」不等於確定沒差。依 2026 年 10 月的 v2（舊版是 49 個 skill，數字已全部更新）。<a class="src" href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench 2026</a></li>
 <li><b>同一個 skill 換模型就可能變差</b>：9 組配置平均都提升（+4.6 到 +19.5 個百分點），但 36.78% 的任務在某些配置變好、在另一些變差。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026</a></li>
 <li><b>模型做不來 skill 推薦的方法時，表現低於無 skill</b>：排考程任務中 skill 推薦整數規劃，DeepSeek 搭 Codex 不用 skill 時 3 次全過，用了 skill 3 次全部逾時；GPT 用同一組 skill，求解器失敗後改用允許的啟發式方法，3 次全過。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026</a></li>
 <li><b>強模型從 skill 得到的增益較大</b>：三種 harness 下 GPT 的增益都比 Qwen 多 3.45 到 8.43 個百分點。只比較兩個模型，不宜當成普遍規律。<a class="src" href="https://arxiv.org/abs/2610.08875">Downstream Utility 2026</a></li>
@@ -37,7 +37,7 @@
 <section>
 <h2><span class="no">二</span>SKILL.md 怎麼寫</h2>
 <ol class="points">
-<li><b>真實世界的 skill 幾乎都有缺陷</b>：超過 99% 至少有一種「skill smell」，平均每個 10.5 種。最常見的是沒防止 agent 合理化跳過步驟（94%）、關鍵警告埋在內文（81%）、沒有規劃階段（78%）、沒有驗證步驟（69%）；smell 出現後幾乎不會被修掉。<a class="src" href="https://arxiv.org/abs/2607.01456">Anatomy to Smells 2026</a></li>
+<li><b>真實世界的 skill 幾乎都有缺陷</b>：超過 99% 至少有一種「skill smell」，平均每個 10.5 種。最常見的是沒防止 agent 合理化跳過步驟（94%）、關鍵警告埋在內文（81%）、沒有規劃階段（78%）、沒有驗證步驟（69%）；smell 出現後幾乎不會被修掉。樣本只來自一個 skill 市集（skills.sh）的熱門英文 skill；語意類的 smell 用單一本地模型偵測；「最佳做法」整理自網路文章，不是經過驗證的準則。<a class="src" href="https://arxiv.org/abs/2607.01456">Anatomy to Smells 2026</a></li>
 <li><b>少量、精簡最好</b>：一次給 2～3 個 skill 增益 +19.0 個百分點，4 個以上只有 +10.1；精簡型 +19.0、標準型 +21.5、詳細型 +14.5，寫成完整文件的只有 +0.7。這是兩組不同的比較（數量、複雜度），不能直接相比。<a class="src" href="https://arxiv.org/abs/2602.12670">SkillsBench 2026</a></li>
 <li><b>skill 造成的失敗，多半不是選錯 skill</b>：307 個由 skill 造成的失敗（125 個功能失敗、182 個效率退化）中，skill 的描述誤導只佔功能失敗的 1.6%；68.8% 是 agent 照 skill 做了卻漏掉或填錯任務要求，包括把範例或預設值當成規則；19.2% 把產出放到和任務指定不同的位置。效率退化有 62.6% 來自流程過重，其中過度驗證最多。只測一個模型、一種 harness，標註沒有報告評分者一致性。<a class="src" href="https://arxiv.org/abs/2608.11888">Agent Skills Can Be Harmful 2026</a></li>
 <li><b>context 膨脹來自內文</b>：46 個 context 負擔案例中，43 個來自每次都載入的 skill 內文。<a class="src" href="https://arxiv.org/abs/2608.11888">Agent Skills Can Be Harmful 2026</a></li>
@@ -53,17 +53,17 @@
 <section>
 <h2><span class="no">三</span>CLAUDE.md／AGENTS.md：只寫 agent 查不到的事</h2>
 <ol class="points">
-<li><b>讓 LLM 自動產生的說明檔沒幫助，還更貴</b>：4 組 agent 與模型、138 個附說明檔的任務加 SWE-bench Lite 300 題。自動產生的說明檔讓成功率變化 −0.5% 到 −2%（不顯著），步數多 2.45 到 3.92 步，成本增加約 20% 到 23%（顯著）。<a class="src" href="https://arxiv.org/abs/2602.11988">Evaluating AGENTS.md 2026</a></li>
+<li><b>讓 LLM 自動產生的說明檔沒幫助，還更貴</b>：4 組 agent 與模型、138 個附說明檔的任務加 SWE-bench Lite 300 題。自動產生的說明檔讓成功率變化 −0.5% 到 −2%（不顯著），步數多 2.45 到 3.92 步，成本增加約 20% 到 23%（顯著）。只測 Python；作者指出模型對 Python 的工具鏈本來就熟，說明檔在冷門語言或工具鏈上的效果可能不同。<a class="src" href="https://arxiv.org/abs/2602.11988">Evaluating AGENTS.md 2026</a></li>
 <li><b>開發者自己寫的說明檔略有幫助，但不顯著</b>：比沒有說明檔平均 +2.4%（p = 0.21），比自動產生的好（p = 0.038），成本仍增加最多 19%。<a class="src" href="https://arxiv.org/abs/2602.11988">Evaluating AGENTS.md 2026</a></li>
 <li><b>agent 確實會照說明檔做事</b>：說明檔提到 uv，每題平均用 1.6 次，沒提到時幾乎不用；提到的 repo 專屬工具每題用約 2.5 次。成本增加正是因為它多跑測試、多讀檔。<a class="src" href="https://arxiv.org/abs/2602.11988">Evaluating AGENTS.md 2026</a></li>
 <li><b>說明檔能縮短時間，但沒測正確性</b>：10 個 repo、124 個小型 PR，Codex 加上 AGENTS.md 後執行時間中位數 −28.6%、輸出 token 中位數 −16.6%（都顯著），總 token 沒有顯著差異。每題只跑一次，正確性只抽 50 題做基本檢查。<a class="src" href="https://arxiv.org/abs/2601.20404">Lulla 等 2026</a></li>
-<li><b>小規模實驗看不出差別</b>：17 個真實任務、2 個 agent、每種設定 3 次，「不給說明檔、每次都給、需要時才查」三種做法的通過率沒有顯著差異。作者指出這個規模只能偵測 30 個百分點以上的差距。<a class="src" href="https://arxiv.org/abs/2607.27250">Khatri 2026</a></li>
+<li><b>小規模實驗看不出差別</b>：3 個 Python repo 的 17 個真實任務、2 個 agent、每種設定 3 次，「不給說明檔、每次都給、需要時才查」三種做法的通過率沒有顯著差異。作者指出這個規模只能偵測 30 個百分點以上的差距；另用等價檢定，把效果限制在 10 到 15 個百分點以內。<a class="src" href="https://arxiv.org/abs/2607.27250">Khatri 2026</a></li>
 <li><b>大家都在寫什麼</b>：收集 1,925 個 repo 的 2,303 個說明檔，再從中抽 332 個人工標註內容：測試（75.9%）、實作細節（70.8%）、架構（68.1%）最常見；安全只有 14.8%、效能只有 14.5%（只要提到就算，一行也算）。檔案中位數 335 到 535 個英文詞；59% 到 67% 的檔案修改過不只一次，修改多半是增加內容，刪除的中位數不到 15 字。<a class="src" href="https://arxiv.org/abs/2511.12884">Agent READMEs 2025</a></li>
-<li><b>指令越多，越容易漏</b>：在「報告中包含指定關鍵字」的人工任務上，最強模型在 500 條指令時只做到 68.9%；靠後的指令較常被忽略，錯誤以完全漏掉為主。這是人工設計的關鍵字任務，不等於真實程式指令。<a class="src" href="https://arxiv.org/abs/2507.11538">IFScale 2025</a></li>
+<li><b>指令越多，越容易漏</b>：在「報告中包含指定關鍵字」的人工任務上，最強模型在 500 條指令時只做到 68.9%；靠後的指令較常被忽略（這個偏差在 150 到 200 條時最明顯，300 條以上趨近平均，後段與前段的錯誤率比約 1.0 到 1.5），錯誤以完全漏掉為主。這是人工設計的關鍵字任務，不等於真實程式指令。<a class="src" href="https://arxiv.org/abs/2507.11538">IFScale 2025</a></li>
 <li><b>對話被壓縮後，規則會消失</b>：只在對話中講過的規則，長對話被壓縮摘要後，7 個模型合計有 30% 的機率違反（最高 59%），完整保留對話時是 0%。在 3 個模型、5 個軟性規則任務上，規則放在系統訊息時違規增加 0 個百分點，放在使用者訊息時增加 50 個百分點。五模型重複實驗：違規增加 37 個百分點（95% 信賴區間 31 到 43）。<span class="new">更新</span>七模型主實驗中，Claude Sonnet 4.6 是 19%。實驗把壓縮設得很激進（作者說是比照實務建議）：摘要上限從 300 個英文詞收緊到 15 個時，規則保留率從 88% 降到 23%，違規從 7% 升到 28%（各模型合計；最受影響的模型在 300 詞時仍有 20%）。受影響的主要是組織自訂的軟性規則（+50 個百分點），模型本來就會拒絕的硬性安全規則只 +6。違規與否主要看負責摘要的模型有沒有保留規則；每次壓縮後把規則原文放回，違規回到 0%，但對話中出現冒充管理者的「規則已撤銷」訊息時仍有 17%（加上來源標註後 10%）。情境是模擬的工具呼叫、對話約 6 千 token、每格 27 次；測過 LangGraph、AutoGen 等框架，沒有測 Claude Code 自己的壓縮；單一作者。<a class="src" href="https://arxiv.org/abs/2606.22528">Chen 2026</a></li>
 <li><b>檔案長度、規則位置、拆成幾個檔，都看不出差別</b><span class="new">新增</span>：Claude Code 1,650 個 session（主要用 Sonnet 4.6，每種條件 50 次）、2 個 TypeScript 專案、5 種任務，規則是「每個函式開頭加一行指定註解」。CLAUDE.md 從 25 行到 500 行，遵守率 60.0% 到 67.7%（p = 0.16）；規則放第 2 行或第 250 行，67.7% 對 61.8%，校正多重比較後不顯著；拆成 CLAUDE.md 加 AGENTS.md 加子目錄檔案，或在另一個檔案放互相矛盾的規則，也都沒有可偵測的差異。長度與矛盾規則有貝氏因子支持「真的沒差」；位置與拆檔只能排除約 6 個百分點以上的影響。沒有說明檔時遵守率是 0%，所以規則有被讀到，只是做不滿。<a class="src" href="https://arxiv.org/abs/2605.10039">McMillan 2026</a></li>
 <li><b>影響最大的是任務類型與對話長度</b><span class="new">新增</span>：同一條規則在不同任務的遵守率從 45.1%（重構既有版面）到 84.4%；同一個 session 裡 agent 每多寫一個函式，遵守的勝算約降 5.6%（OR = 0.944），在第二個專案與 Opus 4.6 上方向相同。這是分析時才發現、不是事先設定的假設；規則很簡單、只測 Anthropic 模型與單輪模式，換成「改 schema 要同步改 migration」這類規則是否一樣，作者說還不知道。<a class="src" href="https://arxiv.org/abs/2605.10039">McMillan 2026</a></li>
-<li><b>有提交 AI 設定檔的專案，導入 agent 後品質退化較少</b><span class="new">新增</span>：509 個導入 agent 的開源專案搭配配對對照組，用交錯式差異中的差異分析，以第一個 agent PR 為導入點。先用 agent 的專案中，沒有提交任何 AI 設定檔（規則檔、CLAUDE.md 等）的，導入後認知複雜度 +52.7%、靜態分析警告 +24.1%；有提交的是 +26.7% 與 +14.0%。兩組 commit 數都增加（+37.6% 與 +27.5%）。另外 441 個企業 repo 中，73.8% 的設定檔提交後就再也沒改過。這是觀察性研究：有設定檔的專案原本就較成熟（星數平均 4,907 對 831），作者自稱「用來產生假設」；論文也沒有檢定兩組差距本身是否顯著，而且只看「有沒有」設定檔，沒看內容。<a class="src" href="https://arxiv.org/abs/2608.25241">Denisov-Blanch 等 2026</a></li>
+<li><b>有提交 AI 設定檔的專案，導入 agent 後品質退化較少</b><span class="new">新增</span>：509 個導入 agent 的開源專案搭配配對對照組，用交錯式差異中的差異分析，以第一個 agent PR 為導入點。先用 agent 的專案中，沒有提交任何 AI 設定檔（規則檔、CLAUDE.md 等）的，導入後認知複雜度 +52.7%、靜態分析警告 +24.1%；有提交的是 +26.7% 與 +14.0%。兩組 commit 數都增加（+37.6% 與 +27.5%）。另外 441 個企業 repo 中，73.8% 的設定檔提交後就再也沒改過。這是觀察性研究：有設定檔的專案原本就較成熟（星數平均 4,907 對 831），作者自稱「用來產生假設」；論文也沒有檢定兩組差距本身是否顯著，而且只看「有沒有」設定檔，沒看內容；品質指標是 SonarQube 的複雜度與警告數，不是實際的 bug。<a class="src" href="https://arxiv.org/abs/2608.25241">Denisov-Blanch 等 2026</a></li>
 </ol>
 <h3>對你的意義</h3>
 <p>CLAUDE.md 只寫 README 沒有、agent 自己查不到的事：建置與測試指令、SDK 的硬體限制、即時執行緒不可配置記憶體這類規則。不要用 /init 自動產生後直接留用。重要規則寫進 CLAUDE.md，不要只在對話中說，因為長對話壓縮後可能被丟掉。<span class="new">更新</span>不必再為檔案長度（500 行內）、規則排第幾行或要不要拆檔費心，把力氣放在內容。就算寫了，簡單規則也只有約六成到七成的遵守率，而且寫越多程式越容易漏，所以「違反就會出事」的規則（例如即時執行緒不可配置記憶體）要另外做成 hook、lint 規則、編譯期檢查或 CI 測試來擋；CLAUDE.md 負責告訴 agent 為什麼，機械檢查負責確保做到。長任務中途可以提醒一次關鍵規則，或拆成較短的 session。</p>
@@ -84,12 +84,12 @@
 
 <section>
 <h2><span class="no">五</span>參考文獻</h2>
-<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字；「部分章節未讀到」指主要結果已核對，但頁面截斷使部分章節或附錄沒讀到。</div>
+<div class="note"><b>發表狀態</b>：2026 年 11 月 2 日依 arXiv 頁面的作者註記與會議官網查核。「正式發表」指已被正式會議或期刊接受；「workshop」審查較寬鬆；「預印本」指查無發表紀錄，可能已被接受但作者尚未更新。<b>閱讀層級</b>：「讀過全文」指已對照內文與表格核對數字，並讀過作者自述的限制。2026 年 11 月 14 日全部重新下載最新版全文（arXiv 或會議 PDF、官方網頁）再查一次：用程式比對每條引用的數字是否出現在全文中，逐篇找出作者自述的限制（有獨立章節的讀該章節，沒有的以關鍵字定位相關段落），重複次數等設定另到實驗設定段核對；論文改版而數字改變的，依最新版改寫並註明版本。</div>
 <ol>
 <li><a href="https://arxiv.org/abs/2602.12670">SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks</a>，Li 等，NeurIPS 2026（正式發表，讀過全文，依 2026 年 6 月 v4）</li>
 <li><a href="https://arxiv.org/abs/2604.04323">How Well Do Agentic Skills Work in the Wild</a>，arXiv 2026 年 4 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2605.24050">More Skills, Worse Agents? Skill Shadowing Degrades Performance When Expanding Skill Libraries</a>，Song、Wei，Databricks，arXiv 2026 年 6 月 v2（預印本，讀過全文）<span class="new">新增</span></li>
-<li><a href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?</a>，Han 等，arXiv 2026 年 3 月（預印本，讀過全文）</li>
+<li><a href="https://arxiv.org/abs/2603.15401">SWE-Skills-Bench: Do Agent Skills Actually Help in Real-World Software Engineering?</a>，Han 等，arXiv 2026 年 10 月 v2（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2610.08875">An Empirical Study of Agent Skills' Downstream Utility</a>，arXiv 2026 年 10 月（預印本，讀過全文）</li>
 <li><a href="https://arxiv.org/abs/2608.04828">Skill-Use: Can LLMs Actually Use Skills in Agentic Harnesses?</a>，arXiv 2026 年 8 月（預印本，讀過全文，11 月 14 日補讀）</li>
 <li><a href="https://arxiv.org/abs/2607.01456">From Anatomy to Smells: An Empirical Study of SKILL.md</a>，arXiv 2026 年 7 月（預印本，讀過全文）</li>
