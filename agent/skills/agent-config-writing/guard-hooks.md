@@ -1,6 +1,6 @@
 # 機械檢查：hook 的寫法與測試
 
-agent-config-writing skill 的附檔，整理日期：2026 年 11 月 15 日。把「違反就會出事」的規則做成 Claude Code hook 或事後檢查時使用。**這份是做法，尚未在實際專案試用**：寫的是要檢查什麼、怎麼測，不附可直接套用的腳本；試點專案跑過、量過誤報之後再補。hook 的行為依據 2026 年 11 月 15 日的 Claude Code 官方文件（https://code.claude.com/docs/en/hooks.md ），`onFailure` 需要 v2.1.295 以上；版本不同時先查文件。
+agent-config-writing skill 的附檔，整理日期：2026 年 11 月 18 日。把「違反就會出事」的規則做成 Claude Code hook 或事後檢查時使用。**這份是做法，尚未在實際專案試用**：寫的是要檢查什麼、怎麼測，不附可直接套用的腳本；試點專案跑過、量過誤報之後再補。hook 的行為依據 2026 年 11 月 15 日的 Claude Code 官方文件（https://code.claude.com/docs/en/hooks.md ），`onFailure` 需要 v2.1.295 以上；版本不同時先查文件。
 
 ## 用法
 
@@ -29,7 +29,7 @@ agent-config-writing skill 的附檔，整理日期：2026 年 11 月 15 日。�
 
 - 基準：首選在分支上開發，用跟主線的 merge-base，不需要另外存狀態。要記錄檔時，只在不存在時記一次（放在 `git rev-parse --git-dir` 回傳的目錄底下；worktree 裡的 `.git` 是檔案不是資料夾），不要每次 session 開始都覆寫：恢復 session 時 SessionStart 會再跑，覆寫會把之前的改動洗掉。基準只能由使用者更新，或在合併到主線且 CI 通過後前移；寫入基準檔要回 `ask`。不更新的話，合法的改動會一直被列出來。
 - PreToolUse，matcher 為寫檔工具（`Edit`、`Write`、`NotebookEdit`）與 shell 工具（`Bash|PowerShell`）。
-- 回 `ask` 的情況：改基準 commit 裡已經存在的測試檔中的斷言或容許誤差；刪掉斷言或測試；加上跳過或預期失敗的標記（`pytest.mark.skip`、`pytest.mark.xfail`、`GTEST_SKIP`、測試名稱加 `DISABLED_` 前綴等）；新增或修改 `conftest.py` 這類能改變測試收集與選取的檔；改參考輸出、golden 檔、測試輸入資料；用 `Write` 整個覆蓋既有測試檔；shell 指令會改動、還原或刪除上述檔案（例如 `sed -i`、`git checkout`、`rm`、`Set-Content`）。
+- 回 `ask` 的情況：改基準 commit 裡已經存在的測試檔中的斷言或容許誤差；刪掉斷言或測試；加上跳過或預期失敗的標記（`pytest.mark.skip`、`pytest.mark.xfail`、`GTEST_SKIP`、測試名稱加 `DISABLED_` 前綴等）；新增或修改 `conftest.py` 這類能改變測試收集與選取的檔；修改已知失敗清單檔；改參考輸出、golden 檔、測試輸入資料；用 `Write` 整個覆蓋既有測試檔；shell 指令會改動、還原或刪除上述檔案（例如 `sed -i`、`git checkout`、`rm`、`Set-Content`）。
 - 放行的情況：新增測試檔；在既有測試檔只新增測試案例；修改這次工作才新增的測試檔（「既有」以基準 commit 為準，否則 TDD 會一直被問）；改產品程式碼。
 - 事後檢查跟基準 commit 比對三樣（Stop hook 只做第一和第三樣；第二樣要跑測試，放在 pre-commit 與 CI）：測試 ID 的集合，有測試消失就列出來，只比總數會被「刪一個、加一個」騙過，用框架自己的列舉（`ctest -N`、`pytest --collect-only -q`、`--gtest_list_tests`）；實際被跳過或預期失敗的數量，從實際執行的報告取（例如 JUnit XML），列舉指令看不出 skip；門檻常數、問題大小與輸入條件、參考輸出與 golden 檔，有變就列出來。
 - 專案要先回答：用哪些測試框架；測試檔、參考輸出、golden 檔放在哪；容許誤差、問題大小寫在哪些檔；格式化工具（black、clang-format 等）會不會改到測試檔；平常會不會合法地重構或改名測試、切換分支。後面三項是誤報的主要來源。
