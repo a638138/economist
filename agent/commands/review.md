@@ -11,7 +11,7 @@ argument-hint: [要審查的範圍或補充說明，可省略]
    - 你自己做的判斷：決定、理由、錯了的代價
    - 測試沒涵蓋的情況，以及你沒驗證到的部分
    - 這是複審（修正前一輪審查的問題之後）時：前一輪的審查報告，以及每個問題怎麼修、同一類還找了哪些路徑
-   - diff 檔：reviewer 沒有 Bash，看不到 git，只能讀檔。用 `git -c core.quotepath=false diff <這次工作開始時的 commit> --stat --patch --output=<repo 外的暫存檔>` 產生（已提交和未提交的改動都涵蓋；用 --output 而不是 shell 導向，避免編碼被改）。新增、還沒追蹤的檔案不在 diff 裡，另外列出路徑讓 reviewer 直接讀。
+   - diff 檔：reviewer 沒有 Bash，看不到 git，只能讀檔。用 `git -c core.quotepath=false diff <這次工作開始時的 commit> --stat --patch --output=<repo 外的暫存檔>` 產生（已提交和未提交的改動都涵蓋；用 --output 而不是 shell 導向，避免編碼被改）。新增、還沒追蹤的檔案不在 diff 裡，另外附上 `git status --short` 的未追蹤清單，標明哪些打算提交，讓 reviewer 直接讀。
 2. 用 reviewer 子 agent 審查，把上面的資料完整交給它。
 3. 依審查結果處理：
    - 每條意見先對照程式碼確認是對的再動手；有看不懂的，先整理起來一次問使用者，問清楚再改，各條可能彼此相關。

@@ -1,11 +1,11 @@
 # 機械檢查：hook 的寫法與測試
 
-agent-config-writing skill 的附檔，整理日期：2026 年 11 月 18 日。把「違反就會出事」的規則做成 Claude Code hook 或事後檢查時使用。**這份是做法，尚未在實際專案試用**：寫的是要檢查什麼、怎麼測，不附可直接套用的腳本；試點專案跑過、量過誤報之後再補。hook 的行為依據 2026 年 11 月 15 日的 Claude Code 官方文件（https://code.claude.com/docs/en/hooks.md ），`onFailure` 需要 v2.1.295 以上；版本不同時先查文件。
+agent-config-writing skill 的附檔，整理日期：2026 年 11 月 25 日。把「違反就會出事」的規則做成 Claude Code hook 或事後檢查時使用。**這份是做法，尚未在實際專案試用**：寫的是要檢查什麼、怎麼測，不附可直接套用的腳本；試點專案跑過、量過誤報之後再補。hook 的行為依據 2026 年 11 月 15 日的 Claude Code 官方文件（https://code.claude.com/docs/en/hooks.md ），`onFailure` 需要 v2.1.295 以上；版本不同時先查文件。
 
 ## 用法
 
-1. 先問使用者要擋哪幾條規則；下面兩個範本是最常見的。每個範本最後列了專案要先回答的問題。
-2. hook 腳本與它的測試放在專案的 `.claude/hooks/`，先照下面測試第 1、3 層測到全過。
+1. 先問使用者要擋哪幾條規則；下面三個範本是最常見的。每個範本最後列了專案要先回答的問題。
+2. hook 腳本與它的測試放在專案的 `.claude/hooks/`，先照下面測試第 1、3 層測到全過（範本三是 git hook，放置、啟用與測試照範本三自己的寫法）。
 3. 列給使用者看：擋什麼、不擋什麼、擋不到什麼、可能的誤報。使用者同意後，在沙盒跑第 2 層（要跑多次 `claude -p`，會花費用，先問）。
 4. **使用者同意前不寫進 settings 啟用。** 啟用後在專案 CLAUDE.md 記一行有哪些 hook、擋什麼；怎麼暫時關掉只告訴使用者，不寫進 CLAUDE.md（agent 每個 session 都會讀到）。
 5. 啟用後照第 4 層檢查誤報，太多就收窄條件。
@@ -19,7 +19,7 @@ agent-config-writing skill 的附檔，整理日期：2026 年 11 月 18 日。�
 - 編碼：Windows 上 Python 與 PowerShell 5.1 的標準輸入輸出預設是系統編碼（例如 cp950）。stdin 以 bytes 讀進來再用 UTF-8 解碼，stdout 明確用 UTF-8 寫；否則中文路徑可能讓腳本崩潰或比對失準。Python 3.15 以前的預設就是這樣。詳見 `windows-traps.md`「Python 的文字編碼」與「Shell、PowerShell 與管線」兩節。
 - 路徑：`Edit`、`Write` 傳進來的 `file_path` 是反斜線的絕對路徑，用正斜線比對永遠比不到，hook 等於不存在；比對前把 `\` 換成 `/`、轉小寫（Windows 路徑不分大小寫），再比對路徑片段（例如 `/tests/`），不要從開頭錨定。shell 指令字串裡的路徑可能是相對路徑、萬用字元或先 `cd` 再操作，比對時一樣要正規化；指令同時含有寫入或刪除的動作（例如 `sed -i`、`>`、`rm`、`Set-Content`、`git checkout`），又可能指向受保護的檔案，卻無法確定路徑時，才回 `ask`，不要每條比不準的指令都問。其他寫檔工具的路徑欄位名稱可能不同（例如 `NotebookEdit`），先記錄一次實際收到的輸入再寫比對。
 - Windows 上 shell 指令可能走 `PowerShell` 工具而不是 `Bash`，matcher 寫 `Bash|PowerShell`。
-- 保護 hook 本身：改 `.claude/settings*.json`、`.claude/hooks/`，或在使用者層級的 `~/.claude/settings.json` 設 `disableAllHooks`，都能關掉 hook，這些修改也要回 `ask`。
+- 保護 hook 本身：改 `.claude/settings*.json`、`.claude/hooks/`，或在使用者層級的 `~/.claude/settings.json` 設 `disableAllHooks`，都能關掉 hook，這些修改也要回 `ask`。用 git hook 時（範本三），改 `.git/hooks/`、`git config core.hooksPath`、樣式清單檔也一樣。
 - PreToolUse hook 只看得到這一次的工具呼叫。改檔可以繞道（另寫腳本改、改建置設定排除測試、把門檻常數放到別的檔），所以一定要搭配事後檢查，而且**最後一道放在 CI**：pre-commit 可以用 `git commit --no-verify`（簡寫 `-n`）或 `git -c core.hooksPath=…` 跳過（這些指令也要回 `ask`）。
 - Stop hook 回 `decision: "block"` 會讓 agent 繼續做，但有三個限制：`onFailure` 對它無效，腳本崩潰就是放行；連續被擋 8 次後，下一次的 block 會被忽略、這一輪直接結束（中間有呼叫工具就重新計數）；用 `stop_hook_active` 避免無限循環時，第二次停下就不會再擋，問題可能還留在檔案裡。所以第二次不擋時，改用 `systemMessage` 告知使用者，並交給 CI。Stop 每次回應結束都會觸發，只做便宜的檢查，要跑整套測試的留給 pre-commit 與 CI，否則逾時就是放行。Stop hook 也沒有 `ask`，合法的修改（例如使用者同意刪掉的測試）要有讓使用者核准的方式，例如核准清單檔（寫入它也要 `ask`）。
 
@@ -42,6 +42,20 @@ agent-config-writing skill 的附檔，整理日期：2026 年 11 月 18 日。�
 - PreToolUse，matcher 為 `Bash|PowerShell`，比對專案實際的寫入工具與**寫入用的子指令**（由使用者提供，不要猜）。備份本身多半也呼叫同一支工具讀裝置，加上 `--help`、`--version`、唯讀子指令，只比對工具名稱會擋到它們。
 - 擋下的情況：找不到這次的備份紀錄，或紀錄對不上。紀錄由備份腳本在讀回比對成功後寫下，內容包括裝置序號、備份檔雜湊、時間；hook 核對序號是同一台、時間晚於上一次寫入、備份檔雜湊相符。只檢查紀錄檔存不存在不夠，agent 自己建一個就能通過；寫入紀錄檔的路徑也要回 `ask`。「上一次寫入的時間」由寫入工具在寫入成功後記錄，hook 在寫入前執行，不知道寫入有沒有成功。這些核對防的是拿錯或過期的備份，擋不住刻意偽造（另寫腳本同時產生假備份與紀錄）；防偽造靠第一條的寫入工具。
 - 專案要先回答：寫入與讀取用哪些工具、哪些子指令會寫入、怎麼取得裝置序號、備份放哪。
+
+## 範本三：提交前擋工具殘留
+
+對應守則：「未追蹤的工具殘留不提交，問過使用者再補進 .gitignore」。專案甲 32 份審查中，1 份抓到已提交的 `.pyc`、1 份提醒 `git add` 會把 `.pyc` 一起帶進去，4 份提醒不要提交同一個 `grep.exe.stackdump`。
+
+- 用 git 的 pre-commit hook，不是 Claude Code hook：殘留通常是 `git add` 整個目錄時一起帶進來的，看這次提交的內容最直接，而且人和 agent 的提交都擋得到。這個範本不走「用法」第 2 步與測試第 1 到 3 層：腳本與測試放在進版控的位置（例如 `tools/git-hooks/`），測試用本範本後面那條。「用法」第 3、4 步照做（列給使用者看、在 CLAUDE.md 記一行），只是「寫進 settings 啟用」換成：複製到 `.git/hooks/pre-commit` 或設 `git config core.hooksPath`，這兩者都不進版控，換機器或重新 clone 要再做一次，經使用者同意才啟用。
+- 只檢查這次提交新增的檔：`git diff --cached --name-only --diff-filter=A --no-renames -z`，以 NUL 切開。不加 `-z` 時，中文路徑會被輸出成 `"\350\263\207…"` 這種帶引號的八進位跳脫，比對不到；不加 `--no-renames` 時，跟某個被刪的檔內容相近的新檔會被當成改名，`--diff-filter=A` 會漏掉它。已追蹤檔的修改不擋。
+- 用 gitignore 的語意比對專案列出的殘留樣式（例如 `*.stackdump`、`__pycache__/`、`*.pyc`、編輯器暫存檔）：把上一步的輸出接給 `git -c core.excludesFile=<樣式清單> check-ignore --no-index -z --stdin`，印出的就是比到的檔；子目錄裡的 `__pycache__/` 也比得到。樣式清單放在專案裡的一個檔，不寫死在腳本。比到就擋下，列出檔名，請使用者確認後補進 .gitignore。
+- 不能靜默放行：`core.excludesFile` 指到不存在的檔時 git 不報錯，`check-ignore` 回 1（沒比到），等於放行，所以腳本先確認清單檔存在、至少有一條樣式，否則擋下。`check-ignore` 回 0 是比到、1 是沒比到，其他結束碼都是出錯（實測參數錯誤回 129），一律擋下。
+- 可能的誤報：repo 自己的 .gitignore 也會一起套用，用 `git add -f` 刻意加進來的檔會被擋；列給使用者看時要說明。
+- 保護：樣式清單、`.git/hooks/`、`core.hooksPath` 的設定被改或清空，就等於關掉這個檢查，照「設計原則」的保護 hook 本身回 `ask`；跳過 pre-commit（`--no-verify`、`-n`）也一樣。這兩項要靠另一支 Claude Code PreToolUse hook，只做範本三時沒有這支，最後一道靠 CI。CI 上沒有暫存區，改比對 `git diff --name-only --diff-filter=A --no-renames -z <基準>...HEAD`；樣式清單取基準分支的版本，否則把清單清空再提交，CI 也照樣通過；清單檔有變動就列成要人看的項目。
+- 擋不到：被文件或程式引用、卻沒一起提交的新檔（要解析引用，誤報多，留給審查）；已經提交過的殘留，之後再改只算修改。
+- 測試：在拋棄式 repo 分別 stage 一個殘留檔、一個中文路徑的殘留檔、一個子目錄 `__pycache__` 裡的檔、一個跟被刪檔內容相近的殘留檔、一個正常的新檔、一個已追蹤而且符合樣式的檔（例如已提交的 `.pyc`）被修改，確認只有前四個被擋；樣式清單不存在、路徑寫錯、內容是空的，三種都要被擋。再把樣式清單換成一條比不到的樣式、拿掉 `--diff-filter=A` 或 `--no-renames`，各確認這組測試會失敗。
+- 專案要先回答：殘留樣式有哪些；用不用 pre-commit 框架；CI 要不要跑同一個檢查。
 
 ## 測試第 1 層：只測 hook 程式
 
