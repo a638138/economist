@@ -29,9 +29,11 @@
 3. **使用者從別的對話貼來的內容**：保留其結論與數字，轉成上述格式即可；不要自行增刪論點。缺日期就用今天。
 4. **檢查**：執行 `python3 tools/build_site.py --notes-only`，確認對應分頁的「筆記：N 篇」或「投資：N 篇」比原本多 1、沒有錯誤。
    這一步會改到 `notes/`、`invest/`，不要提交它們：`git checkout -- notes invest`。
-5. **提交與推送**：只提交 `notes_src/`，訊息如 `新增筆記：<標題>`，推到目前的工作分支即可，**不需要開 PR**。
+5. **提交與推送**：只提交 `notes_src/`，訊息如 `新增筆記：<標題>`，**不開 PR**。能推 main 就直接推 main（使用者的偏好）；
+   推不了 main 的 session（雲端、手機）才推到 `claude/**` 工作分支。
    GitHub Action（`.github/workflows/notes.yml`）會把 `claude/**` 分支或 main 上 `notes_src/` 的變動套用到 main、
-   重建筆記頁並發佈，約 1～2 分鐘後網站更新。
+   重建筆記頁並發佈，約 1～2 分鐘後網站更新。Action 只同步 `notes_src/` 與 `agent/`，其他檔（例如這份 CLAUDE.md）
+   推在工作分支上不會進 main，要另外推到 main。
 6. **回報**：告訴使用者檔案路徑、筆記標題，以及上方筆記分頁網址。若想確認發佈結果，可請使用者到 repo 的 Actions 分頁看「發佈筆記」是否成功。
 
 ## 修改或刪除筆記
@@ -41,7 +43,7 @@
 ## AI Agent 工作守則（`agent/`）
 - 使用者用來在新專案建立 agent 開發環境的一套檔案，全部顯示在筆記分頁的「Agent 開發環境」分類（`tools/build_site.py` 的 `NOTE_LINKED`）。網站上顯示的就是 agent 讀的同一份，這些 md 是唯一來源：
   - `agent/setup.md`：入口頁。新專案對 agent 說「讀這頁、照步驟建立環境」，agent 會下載下列檔案裝進專案的 `.claude/`。
-  - `agent/ai-agent-guide.md`：工作守則，每個 session 都讀。**核心規則保持 20 條以內**，新增前先考慮能否併入同主題的既有條目；只收模型預設不一定會做的規則，沒有直接研究支持的要標「做法」或「專案經驗」；只在特定專案類型相關的規則放在標明「只在這類專案適用」的小節（目前是 C++／GPU／即時系統／碰硬體）。
+  - `agent/ai-agent-guide.md`：工作守則，每個 session 都讀。**核心規則保持 20 條以內**，新增前先考慮能否併入同主題的既有條目；只收模型預設不一定會做的規則，沒有直接研究支持的要標「做法」或「專案經驗」；只在特定專案、程式或工作類型相關的規則，放在標明適用範圍（只在這類專案／程式／工作適用）的小節（目前是「依賴其他狀態的結果、多步驟流程或背景工作」「量測報告與資料分析」「C++／GPU／即時系統／碰硬體」）。守則新增的錯誤類型，審查程式碼看得出來的，也要在 `agent/agents/reviewer.md` 的「要找的問題」加上對應的檢查項；流程類的（例如問使用者、測試基準）不加。
   - `agent/skills/agent-config-writing/SKILL.md`：撰寫 CLAUDE.md、SKILL.md、MCP 工具時才載入的 skill；附檔 `windows-traps.md` 是 Windows（尤其非英文語系）的靜默陷阱檢查清單（每項：現象、怎麼查、怎麼修、必要時的二次陷阱、哨兵測試，每項都要有哨兵測試），專案經驗裡新發現的環境陷阱加在這裡；新增的修法要先確認不會引入另一個陷阱。附檔 `guard-hooks.md` 是把規則做成 hook 或事後檢查的寫法與四層測試，目前標明「尚未在實際專案試用」；試點專案跑過後，補上實際腳本與誤報數據，再拿掉這個標示。hook 行為依官方文件，改寫前先對照最新文件。
   - `agent/agents/reviewer.md`：只讀的獨立審查子 agent（守則「獨立審查」那條用它）；`agent/commands/review.md`、`handoff.md`：使用者指令 /review、/handoff。改守則的審查或交接規則時，這三個檔要一起對齊。
 - **新增、改名或刪除 `agent/` 下的檔案時，三處要一起改**：`agent/setup.md` 的檔案清單、`tools/build_site.py` 的 `NOTE_LINKED`、`tools/install_agent_rules.py`（安裝到使用者電腦的 `~/.claude`）。
@@ -49,4 +51,4 @@
 - **改到 AI重點 筆記的結論或「對你的意義」時，同步更新守則與 skill**：規則用祈使句、一行一條、句尾標出依據章節（例如「（二-1）」），不放數字細節（除非數字本身就是 agent 要用的判斷依據，例如計時器解析度）；更新檔頭的日期。改完提醒使用者在電腦上重跑 `python tools/install_agent_rules.py`，並在用到的專案裡請 agent 照 setup.md 更新。
 - 只收對 agent 行為有影響的規則；只對使用者本人有用的建議（例如 effort 怎麼設）留在筆記裡。
 - 網頁版格式：守則、setup.md、windows-traps.md、guard-hooks.md 轉成一般筆記版面，只支援 `#`、`##`、段落、`- ` 與 `1. ` 清單（不可巢狀）、行內 `code`、`**粗體**`，不要用表格；粗體裡不能夾行內 code（轉換時先依反引號切段，`**` 會配不起來、原樣顯示）；skill、子 agent、指令是設定檔，原文照登（mode="raw"），不受此限。
-- 提交與推送方式同筆記（Action 也會處理 `agent/` 的變動）。
+- 提交與推送方式同筆記：能推 main 就直接推 main，不開 PR（Action 也會處理 `agent/` 的變動）。
