@@ -27,7 +27,7 @@ agent-config-writing skill 的附檔，整理日期：2026 年 11 月 18 日。�
 
 對應守則：「不得為了讓結果通過而修改、刪除或跳過測試，也不得放寬容許誤差、改變問題大小或輸入條件」。
 
-- 基準：首選在分支上開發，用跟主線的 merge-base，不需要另外存狀態。要記錄檔時，只在不存在時記一次（放在 `git rev-parse --git-dir` 回傳的目錄底下；worktree 裡的 `.git` 是檔案不是資料夾），不要每次 session 開始都覆寫：恢復 session 時 SessionStart 會再跑，覆寫會把之前的改動洗掉。基準只能由使用者更新，或在合併到主線且 CI 通過後前移；寫入基準檔要回 `ask`。不更新的話，合法的改動會一直被列出來。
+- 基準：首選在分支上開發，用跟主線的 merge-base，不需要另外存狀態。要記錄檔時，只在不存在時記一次（放在 `git rev-parse --git-dir` 回傳的目錄底下；worktree 裡的 `.git` 是檔案不是資料夾），不要每次 SessionStart 都覆寫：恢復 session（`resume`）與壓縮（`compact`）時 SessionStart 也會跑，覆寫會把這個 session 自己的改動洗掉。基準只能由使用者更新、在合併到主線且 CI 通過後前移，或照使用者的決定只在新 session（`startup`、`clear`）自動前移；寫入基準檔、手動執行前移腳本都要回 `ask`。不更新的話，合法的改動會一直被列出來（專案甲兩週沒前移，落後 27 個 commit，事後檢查列出 74 筆舊改動要人工挑）。專案甲的自動前移做法（2026 年 11 月 25 日）：前移前先跑事後檢查、清單存檔，數量與守門不會問的類別（產品程式碼的門檻、golden 與測試資料）的前幾行顯示給使用者；守門本身或基準檔被改過就不前移，交給使用者；同時告訴 agent 這個 session 開始時的 commit，並行時回報前的檢查改用它當基準。
 - PreToolUse，matcher 為寫檔工具（`Edit`、`Write`、`NotebookEdit`）與 shell 工具（`Bash|PowerShell`）。
 - 回 `ask` 的情況：改基準 commit 裡已經存在的測試檔中的斷言或容許誤差；刪掉斷言或測試；加上跳過或預期失敗的標記（`pytest.mark.skip`、`pytest.mark.xfail`、`GTEST_SKIP`、測試名稱加 `DISABLED_` 前綴等）；新增或修改 `conftest.py` 這類能改變測試收集與選取的檔；修改已知失敗清單檔；改參考輸出、golden 檔、測試輸入資料；用 `Write` 整個覆蓋既有測試檔；shell 指令會改動、還原或刪除上述檔案（例如 `sed -i`、`git checkout`、`rm`、`Set-Content`）。
 - 放行的情況：新增測試檔；在既有測試檔只新增測試案例；修改這次工作才新增的測試檔（「既有」以基準 commit 為準，否則 TDD 會一直被問）；改產品程式碼。
